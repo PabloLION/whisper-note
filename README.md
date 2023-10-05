@@ -39,6 +39,8 @@ Most of this should be converted to GitHub Issues when published.
   - Maybe add [textual](https://github.com/Textualize/textual) as a front end
   - Run model by user speech input
   - Try small and fast English only model
+  - Add a "Recording..." indicator every 5 seconds the input is idle.
+  - Add logger to distinguish between log and model output
 
 ## Special thanks
 

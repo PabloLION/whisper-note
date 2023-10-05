@@ -15,6 +15,8 @@ import torch
 import whisper
 from result import Err, Ok, Result
 
+SampleQueue = Queue[bytes]
+
 
 def build_args() -> argparse.Namespace:
     # this build a default args, but we should #TODO:
@@ -86,7 +88,7 @@ def load_microphone_source(args) -> Result[sr.Microphone, str]:
 
 # def load_whisper_model(args) -> Result[whisper.Whisper, str]:
 def initialize_source_recorder_with_queue(
-    args: argparse.Namespace, data_queue: Queue
+    args: argparse.Namespace, data_queue: SampleQueue
 ) -> tuple[sr.Microphone, sr.Recognizer]:
     # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.
     recorder = sr.Recognizer()
@@ -106,6 +108,7 @@ def initialize_source_recorder_with_queue(
         """
         # Grab the raw bytes and push it into the thread safe queue.
         data = audio.get_raw_data()
+        print(f"Received {len(data)} bytes of audio data.")
         data_queue.put(data)
 
     # Create a background thread that will pass us raw audio bytes.
@@ -127,18 +130,17 @@ def load_model(args) -> whisper.Whisper:
 
 def main():
     args = build_args()
-    args.model = "large"  # #TODO: add a config file
+    args.model = "large"  # #TODO: add config file
 
     # Thread safe Queue for passing data from the threaded recording callback.
-    data_queue = Queue()
-    audio_model = load_model(args)
+    data_queue: SampleQueue = Queue()
+    audio_model: whisper.Whisper = load_model(args)
     source, _ = initialize_source_recorder_with_queue(args, data_queue)
     print("Model loaded. Recording...")  # Cue the user that we're ready to go.
 
     phrase_timeout = timedelta(seconds=args.phrase_timeout)
     phrase_timestamp = datetime.utcnow()  # The last time of retrieved data.
-    # #TODO merge this into the queue to show time stamp
-    current_audio_bytes = bytes()  # Current raw audio bytes.
+    audio_buffer = bytes()  # Current raw audio bytes.
     transcription = [""]
 
     while True:
@@ -150,40 +152,36 @@ def main():
             break
 
         # data_queue is not empty, handle the data.
-        temp_wav = NamedTemporaryFile()
+        temp_wav = NamedTemporaryFile()  # new temp file to aggregate audio data
         now = datetime.utcnow()
+
         # If enough time has passed between recordings, consider the phrase complete.
-        # Clear the current working audio buffer to start over with the new data.
-        if now - phrase_timestamp > phrase_timeout:
-            phrase_complete = True  # show call this "is_new_phrase"
-            current_audio_bytes = bytes()
-            # keep phrase_timestamp the same
+        # Clear the current audio buffer to start over with the new data.
+        is_new_phrase = now - phrase_timestamp > phrase_timeout
+        if is_new_phrase:
+            audio_buffer = bytes()
+            # keep audio_timestamp the same
         else:
-            phrase_complete = False
             phrase_timestamp = now
-            # keep current_audio_bytes the same
+            # keep audio_sample the same
 
         # Concatenate our current audio data with the latest audio data.
-        while not data_queue.empty():
-            data = data_queue.get()
-            current_audio_bytes += data
+        while not data_queue.empty():  # there's no better way for Queue.
+            audio_buffer += data_queue.get()
 
-        # Use AudioData to convert the raw data to wav data.
-        audio_data = sr.AudioData(
-            current_audio_bytes, source.SAMPLE_RATE, source.SAMPLE_WIDTH
-        )
+        # Convert the raw data to wav AudioData.
+        audio_data = sr.AudioData(audio_buffer, source.SAMPLE_RATE, source.SAMPLE_WIDTH)
         wav_bytes = io.BytesIO(audio_data.get_wav_data())
         temp_wav.write(wav_bytes.read())  # Write wav bytes to the temp file
 
-        # Read the transcription.
+        # Get transcription from the model.
         result = audio_model.transcribe(temp_wav.name, fp16=torch.cuda.is_available())
         text = cast(str, result["text"]).strip()
 
-        # pause detected between recordings, add new item to transcription.
-        if phrase_complete:
-            transcription.append(text)
-        else:  # Otherwise edit the existing one.
-            transcription[-1] = text
+        # Add new item to transcription, or append to the existing last phrase.
+        if is_new_phrase:
+            transcription.append("")
+        transcription[-1] = text
 
         # Reprint the updated transcription to a cleared terminal.
         os.system("cls" if os.name == "nt" else "clear")  # #TODO: extract
