@@ -142,57 +142,54 @@ def main():
     transcription = [""]
 
     while True:
-        try:
-            # Pull raw recorded audio from the queue.
+        try:  # to not block the keyboard interrupt
             if data_queue.empty():
                 sleep(0.1)
                 continue
-
-            temp_wav = NamedTemporaryFile()
-            now = datetime.utcnow()
-            # If enough time has passed between recordings, consider the phrase complete.
-            # Clear the current working audio buffer to start over with the new data.
-            if now - phrase_timestamp > phrase_timeout:
-                phrase_complete = True  # show call this "is_new_phrase"
-                current_audio_bytes = bytes()
-                # keep phrase_timestamp the same
-            else:
-                phrase_complete = False
-                phrase_timestamp = now
-                # keep current_audio_bytes the same
-
-            # Concatenate our current audio data with the latest audio data.
-            while not data_queue.empty():
-                data = data_queue.get()
-                current_audio_bytes += data
-
-            # Use AudioData to convert the raw data to wav data.
-            audio_data = sr.AudioData(
-                current_audio_bytes, source.SAMPLE_RATE, source.SAMPLE_WIDTH
-            )
-            wav_bytes = io.BytesIO(audio_data.get_wav_data())
-            temp_wav.write(wav_bytes.read())  # Write wav bytes to the temp file
-
-            # Read the transcription.
-            result = audio_model.transcribe(
-                temp_wav.name, fp16=torch.cuda.is_available()
-            )
-            text = cast(str, result["text"]).strip()
-
-            # pause detected between recordings, add new item to transcription.
-            if phrase_complete:
-                transcription.append(text)
-            else:  # Otherwise edit the existing one.
-                transcription[-1] = text
-
-            # Reprint the updated transcription to a cleared terminal.
-            os.system("cls" if os.name == "nt" else "clear")  # #TODO: extract
-            for line in transcription:
-                print(line)
-            print("", end="", flush=True)  # Flush stdout.
-
         except KeyboardInterrupt:
             break
+
+        # data_queue is not empty, handle the data.
+        temp_wav = NamedTemporaryFile()
+        now = datetime.utcnow()
+        # If enough time has passed between recordings, consider the phrase complete.
+        # Clear the current working audio buffer to start over with the new data.
+        if now - phrase_timestamp > phrase_timeout:
+            phrase_complete = True  # show call this "is_new_phrase"
+            current_audio_bytes = bytes()
+            # keep phrase_timestamp the same
+        else:
+            phrase_complete = False
+            phrase_timestamp = now
+            # keep current_audio_bytes the same
+
+        # Concatenate our current audio data with the latest audio data.
+        while not data_queue.empty():
+            data = data_queue.get()
+            current_audio_bytes += data
+
+        # Use AudioData to convert the raw data to wav data.
+        audio_data = sr.AudioData(
+            current_audio_bytes, source.SAMPLE_RATE, source.SAMPLE_WIDTH
+        )
+        wav_bytes = io.BytesIO(audio_data.get_wav_data())
+        temp_wav.write(wav_bytes.read())  # Write wav bytes to the temp file
+
+        # Read the transcription.
+        result = audio_model.transcribe(temp_wav.name, fp16=torch.cuda.is_available())
+        text = cast(str, result["text"]).strip()
+
+        # pause detected between recordings, add new item to transcription.
+        if phrase_complete:
+            transcription.append(text)
+        else:  # Otherwise edit the existing one.
+            transcription[-1] = text
+
+        # Reprint the updated transcription to a cleared terminal.
+        os.system("cls" if os.name == "nt" else "clear")  # #TODO: extract
+        for line in transcription:
+            print(line)
+        print("", end="", flush=True)  # Flush stdout.
 
     print("\n\nTranscription:")
     for line in transcription:
