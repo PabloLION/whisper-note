@@ -33,6 +33,7 @@ I don't know how to install these.
 - Trying to use [result](https://pypi.org/project/result/) to handle error, not sure how it feels.
 - The idea is to build something to substitute Otter to take notes.
   - Maybe add [textual](https://github.com/Textualize/textual) as a front end?
+  - Check speech recognition
 
 ## Special thanks
 

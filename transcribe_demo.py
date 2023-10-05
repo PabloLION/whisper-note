@@ -121,7 +121,7 @@ def load_model(args) -> whisper.Whisper:
     model = args.model
     if args.model != "large" and not args.non_english:
         model = model + ".en"
-    print(f"Loading model {model}")
+    print(f"Loading whisper model '{model}'")
     return whisper.load_model(model)
 
 
@@ -136,10 +136,7 @@ def main():
     data_queue = Queue()
 
     audio_model = load_model(args)
-
     source, _ = initialize_source_recorder_with_queue(args, data_queue)
-
-    temp_file = NamedTemporaryFile().name
     transcription = [""]
 
     # Cue the user that we're ready to go.
@@ -152,6 +149,7 @@ def main():
                 sleep(0.1)
                 continue
 
+            temp_wav = NamedTemporaryFile()
             now = datetime.utcnow()
             phrase_complete = False
             # If enough time has passed between recordings, consider the phrase complete.
@@ -176,11 +174,16 @@ def main():
             wav_data = io.BytesIO(audio_data.get_wav_data())
 
             # Write wav data to the temporary file as bytes.
-            with open(temp_file, "w+b") as f:
-                f.write(wav_data.read())
+            # print(f"Transcribing from wav file {temp_wav.name}")
+            # with open(temp_wav.name, "w+b") as f:
+            #     f.write(wav_data.read())
+            #     print(f"current file size: {f.tell()}")
+            temp_wav.write(wav_data.read())
 
             # Read the transcription.
-            result = audio_model.transcribe(temp_file, fp16=torch.cuda.is_available())
+            result = audio_model.transcribe(
+                temp_wav.name, fp16=torch.cuda.is_available()
+            )
             text = cast(str, result["text"]).strip()
 
             # If we detected a pause between recordings, add a new item to our transcription.
