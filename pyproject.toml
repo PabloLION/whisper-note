@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "whisper-note"
+version = "0.1.0"
+description = ""
+authors = ["PabloLION <36828324+PabloLION@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{ include = "whisper_note" }]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+SpeechRecognition = "^3.10.0"
+openai-whisper = {git = "https://github.com/openai/whisper.git"}
+pyaudio = "^0.2.13"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
