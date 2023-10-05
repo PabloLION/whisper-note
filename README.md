@@ -30,10 +30,15 @@ I don't know how to install these.
 
 ## Dev
 
+Most of this should be converted to GitHub Issues when published.
+
 - Trying to use [result](https://pypi.org/project/result/) to handle error, not sure how it feels.
 - The idea is to build something to substitute Otter to take notes.
-  - Maybe add [textual](https://github.com/Textualize/textual) as a front end?
   - Check speech recognition
+  - UI: start/end, args, export to PDF/TXT/..., clean transcription, etc.
+  - Maybe add [textual](https://github.com/Textualize/textual) as a front end
+  - Run model by user speech input
+  - Try small and fast English only model
 
 ## Special thanks
 

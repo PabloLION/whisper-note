@@ -128,19 +128,18 @@ def load_model(args) -> whisper.Whisper:
 def main():
     args = build_args()
     args.model = "large"  # #TODO: add a config file
-    # The last time a recording was retrieved from the queue.
-    phrase_time = None
-    # Current raw audio bytes.
-    last_sample = bytes()
+
     # Thread safe Queue for passing data from the threaded recording callback.
     data_queue = Queue()
-
     audio_model = load_model(args)
     source, _ = initialize_source_recorder_with_queue(args, data_queue)
-    transcription = [""]
+    print("Model loaded. Recording...")  # Cue the user that we're ready to go.
 
-    # Cue the user that we're ready to go.
-    print("Model loaded. Recording...")
+    phrase_timeout = timedelta(seconds=args.phrase_timeout)
+    phrase_timestamp = datetime.utcnow()  # The last time of retrieved data.
+    # #TODO merge this into the queue to show time stamp
+    current_audio_bytes = bytes()  # Current raw audio bytes.
+    transcription = [""]
 
     while True:
         try:
@@ -151,34 +150,28 @@ def main():
 
             temp_wav = NamedTemporaryFile()
             now = datetime.utcnow()
-            phrase_complete = False
             # If enough time has passed between recordings, consider the phrase complete.
             # Clear the current working audio buffer to start over with the new data.
-            if phrase_time and now - phrase_time > timedelta(
-                seconds=args.phrase_timeout
-            ):
-                last_sample = bytes()
-                phrase_complete = True
-            # This is the last time we received new audio data from the queue.
-            phrase_time = now
+            if now - phrase_timestamp > phrase_timeout:
+                phrase_complete = True  # show call this "is_new_phrase"
+                current_audio_bytes = bytes()
+                # keep phrase_timestamp the same
+            else:
+                phrase_complete = False
+                phrase_timestamp = now
+                # keep current_audio_bytes the same
 
             # Concatenate our current audio data with the latest audio data.
             while not data_queue.empty():
                 data = data_queue.get()
-                last_sample += data
+                current_audio_bytes += data
 
             # Use AudioData to convert the raw data to wav data.
             audio_data = sr.AudioData(
-                last_sample, source.SAMPLE_RATE, source.SAMPLE_WIDTH
+                current_audio_bytes, source.SAMPLE_RATE, source.SAMPLE_WIDTH
             )
-            wav_data = io.BytesIO(audio_data.get_wav_data())
-
-            # Write wav data to the temporary file as bytes.
-            # print(f"Transcribing from wav file {temp_wav.name}")
-            # with open(temp_wav.name, "w+b") as f:
-            #     f.write(wav_data.read())
-            #     print(f"current file size: {f.tell()}")
-            temp_wav.write(wav_data.read())
+            wav_bytes = io.BytesIO(audio_data.get_wav_data())
+            temp_wav.write(wav_bytes.read())  # Write wav bytes to the temp file
 
             # Read the transcription.
             result = audio_model.transcribe(
@@ -186,19 +179,18 @@ def main():
             )
             text = cast(str, result["text"]).strip()
 
-            # If we detected a pause between recordings, add a new item to our transcription.
-            # Otherwise edit the existing one.
+            # pause detected between recordings, add new item to transcription.
             if phrase_complete:
                 transcription.append(text)
-            else:
+            else:  # Otherwise edit the existing one.
                 transcription[-1] = text
 
-            # Clear the console to reprint the updated transcription.
-            os.system("cls" if os.name == "nt" else "clear")
+            # Reprint the updated transcription to a cleared terminal.
+            os.system("cls" if os.name == "nt" else "clear")  # #TODO: extract
             for line in transcription:
                 print(line)
-            # Flush stdout.
-            print("", end="", flush=True)
+            print("", end="", flush=True)  # Flush stdout.
+
         except KeyboardInterrupt:
             break
 
