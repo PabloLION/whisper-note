@@ -584,6 +584,20 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)"]
 use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
+name = "result"
+version = "0.13.1"
+description = "A Rust-like result type for Python"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "result-0.13.1-py3-none-any.whl", hash = "sha256:7730100236fa6048cc831b580fdc460c5eed09932b8772d272417067a0fe762a"},
+    {file = "result-0.13.1.tar.gz", hash = "sha256:8254cef5be1d400bd1df3cb33adf47849ca806c77bf0a45037be47f9496db9be"},
+]
+
+[package.dependencies]
+typing-extensions = {version = "*", markers = "python_version < \"3.10\""}
+
+[[package]]
 name = "SpeechRecognition"
 version = "3.10.0"
 description = "Library for performing speech recognition, with support for several engines and APIs, online and offline."
@@ -750,4 +764,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "4a9453915412b39b3b5a65361d94323d106251438243aec9f74ba8fc5d0ef2a9"
+content-hash = "c96373cb8c2a88e9af76db67e8a5b91c5077f6175f6953aad19974b4beda1e9c"

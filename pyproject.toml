@@ -11,6 +11,7 @@ python = "^3.9"
 SpeechRecognition = "^3.10.0"
 openai-whisper = {git = "https://github.com/openai/whisper.git"}
 pyaudio = "^0.2.13"
+result = "^0.13.1"
 
 
 [build-system]
