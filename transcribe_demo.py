@@ -167,7 +167,7 @@ class Transcriptions:
 
 def main():
     args = build_args()
-    args.model = "large"  # #TODO: add config file
+    args.model = "small"  # #TODO: add config file
 
     # Thread safe Queue for passing data from the threaded recording callback.
     data_queue: SampleQueue = Queue()

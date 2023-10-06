@@ -28,6 +28,10 @@ I don't know how to install these.
 - Linux
 - Mac with Intel
 
+## Use
+
+- Large model will cause the script to run slow: the recognition happens slower than a constantly speaking person, with M1 Ultra 128GB RAM.
+
 ## Dev
 
 Most of this should be converted to GitHub Issues when published.
