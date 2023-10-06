@@ -14,6 +14,7 @@ import whisper
 from result import Err, Ok, Result
 
 from transcription import Transcriptions
+from whisper_note.parse_env_cfg import CONFIG
 from whisper_note.translate import Language, get_translator
 
 SampleQueue = Queue[bytes]
@@ -127,15 +128,9 @@ def load_model(args) -> whisper.Whisper:
     return whisper.load_model(model)
 
 
-import yaml
-
-
 def real_time_transcribe():
     args = build_args()
-    cfg_path = os.path.abspath(__file__ + "/../../config.yml")
-    with open(cfg_path) as cfg_file:
-        cfg = yaml.safe_load(cfg_file)
-        args.model = cfg["model"]  # TODO: add config parser. throws error
+    args.model = CONFIG.model  # TODO: add config parser. throws error
 
     # Now, 'data' contains the parsed YAML data as a Python dictionary
 
@@ -192,7 +187,3 @@ def real_time_transcribe():
         if is_new_phrase:
             transcription.new_phrase()
         transcription.update_last(text)
-
-
-if __name__ == "__main__":
-    real_time_transcribe()

@@ -1,1 +1,3 @@
-model: "large" # "small.en"  model name
+model: "small" # "small.en"  model name
+translator: "DEEPL" # "NONE"(no translation) or "DEEPL".
+# translator to support: "GOOGLE", "MICROSOFT", "AMAZON", "YANDEX", "PAPAGO", "KAKAO"

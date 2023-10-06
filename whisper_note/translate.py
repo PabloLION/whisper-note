@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Any, Optional, Protocol, Union, cast, overload
-from parse_env_cfg import TRANSLATE, parsed_config
+from parse_env_cfg import CONFIG
 import deepl
 
 
@@ -70,19 +70,17 @@ class DeepLTranslator(TranslatorProtocol):
 
 def get_translator(
     target_lang: Language, source_lang: Optional[Language] = None
-) -> TranslatorProtocol:
-    if TRANSLATE == "DEEPL":
-        return DeepLTranslator(
-            parsed_config["TRANSLATE_API_KEY"], target_lang, source_lang
-        )
+) -> Optional[TranslatorProtocol]:
+    if CONFIG.translator == "NONE":
+        return None
+    if CONFIG.translator == "DEEPL":
+        return DeepLTranslator(CONFIG.translator_key, target_lang, source_lang)
     else:
-        raise ValueError(f"Unknown translator: {TRANSLATE=}")
+        raise ValueError(f"Unknown translator: {CONFIG.translator=}")
 
 
 def test_deepl_translate():
-    translator = DeepLTranslator(
-        parsed_config["TRANSLATE_API_KEY"], Language.EN, Language.CN
-    )
+    translator = DeepLTranslator(CONFIG.translator_key, Language.EN, Language.CN)
     test_translate = translator.translate("Hello, world")
     assert test_translate == "你好，世界", f"{test_translate=}"
 
