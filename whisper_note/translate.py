@@ -24,6 +24,7 @@ class DeepLTranslator(TranslatorProtocol):
     translator: deepl.Translator
 
     def __init__(self, api_key: str):
+        # #TODO add to protocol, and the translation langs
         self.translator = deepl.Translator(api_key)
 
     def translate(
@@ -60,7 +61,7 @@ class DeepLTranslator(TranslatorProtocol):
 
 
 def get_translator() -> TranslatorProtocol:
-    if TRANSLATE == "deepl":
+    if TRANSLATE == "DEEPL":
         return DeepLTranslator(parsed_config["TRANSLATE_API_KEY"])
     else:
         raise ValueError(f"Unknown translator: {TRANSLATE=}")

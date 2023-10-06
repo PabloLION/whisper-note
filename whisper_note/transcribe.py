@@ -14,6 +14,7 @@ import whisper
 from result import Err, Ok, Result
 
 from transcription import Transcriptions
+from whisper_note.translate import get_translator
 
 SampleQueue = Queue[bytes]
 
@@ -147,7 +148,9 @@ def real_time_transcribe():
     phrase_timeout = timedelta(seconds=args.phrase_timeout)
     phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
     audio_buffer = bytes()  # Current raw audio bytes.
-    transcription = Transcriptions(spontaneous_print=True, spontaneous_translator=None)
+    transcription = Transcriptions(
+        spontaneous_print=True, spontaneous_translator=get_translator()
+    )
 
     while True:
         try:  # to not block the keyboard interrupt
