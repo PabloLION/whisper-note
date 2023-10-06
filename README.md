@@ -45,6 +45,7 @@ Most of this should be converted to GitHub Issues when published.
   - Try small and fast English only model
   - Add a "Recording..." indicator every 5 seconds the input is idle.
   - Add logger to distinguish between log and model output
+- For translation, it seems that [DeepL](https://www.deepl.com/translator) is the best option, but it's not free. And I don't need it. So I'm just doing the most basic thing: translate the text with some API.
 
 ## Special thanks
 
