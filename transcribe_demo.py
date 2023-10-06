@@ -128,6 +128,41 @@ def load_model(args) -> whisper.Whisper:
     return whisper.load_model(model)
 
 
+class Transcriptions:
+    timestamp: list[datetime]
+    text: list[str]
+
+    __CLEAR_COMMAND = "cls" if os.name == "nt" else "clear"
+
+    def __init__(self) -> None:
+        self.timestamp = []
+        self.text = []
+
+    def add(self, timestamp: datetime, text: str) -> None:
+        self.timestamp.append(timestamp)
+        self.text.append(text)
+
+    def update_last(self, text: str) -> None:
+        self.text[-1] = text
+
+    def clear(self) -> None:  # never used
+        self.timestamp.clear()
+        self.text.clear()
+
+    def print(self, clear: bool = False) -> None:
+        if clear:
+            os.system(self.__CLEAR_COMMAND)
+        for line in self.text:
+            print(line)
+        print("", end="", flush=True)
+
+    def __str__(self) -> str:
+        return "\n".join(self.text)
+
+    def __repr__(self) -> str:
+        return f"Transcripts({self.timestamp}, {self.text})"
+
+
 def main():
     args = build_args()
     args.model = "large"  # #TODO: add config file
