@@ -7,6 +7,8 @@ import deepl
 class Language(Enum):
     ES = "Spanish"
     EN = "English"
+    EN_US = "American_English"
+    EN_GB = "British_English"
     CN = "Chinese_Simplified"
 
 
@@ -15,7 +17,10 @@ class TranslatorProtocol(Protocol):
     translator: Union[deepl.Translator, Any]  # TODO: Add other translators
 
     def __init__(
-        api_key: str, target_lang: Language, source_lang: Optional[Language] = None
+        self,
+        api_key: str,
+        target_lang: Language,
+        source_lang: Optional[Language] = None,
     ):
         ...
 
@@ -32,7 +37,6 @@ class DeepLTranslator(TranslatorProtocol):
         target_lang: Language,
         source_lang: Optional[Language] = None,
     ):
-        # #TODO add to protocol, and the translation langs
         self.translator = deepl.Translator(api_key)
         self.target_lang = target_lang
         self.source_lang = source_lang
@@ -40,8 +44,8 @@ class DeepLTranslator(TranslatorProtocol):
     def translate(self, text: str) -> str:
         result = self.translator.translate_text(
             text,
-            source_lang=self.to_deepl_language(self.source_lang),
             target_lang=self.to_deepl_language(self.target_lang),
+            source_lang=self.to_deepl_language(self.source_lang),
         )
         if isinstance(result, list):
             raise ValueError(f"DeepL returned a list of translations: {result=}")
@@ -61,11 +65,16 @@ class DeepLTranslator(TranslatorProtocol):
     def to_deepl_language(lang: Optional[Language]) -> Optional[deepl.Language]:
         if lang is None:
             return None
-        return {
-            Language.ES: cast(deepl.Language, deepl.Language.SPANISH),
-            Language.EN: cast(deepl.Language, deepl.Language.ENGLISH),
-            Language.CN: cast(deepl.Language, deepl.Language.CHINESE),
-        }[lang]
+        try:
+            return {
+                Language.ES: cast(deepl.Language, deepl.Language.SPANISH),
+                Language.EN: cast(deepl.Language, deepl.Language.ENGLISH),
+                Language.EN_US: cast(deepl.Language, deepl.Language.ENGLISH_AMERICAN),
+                Language.EN_GB: cast(deepl.Language, deepl.Language.ENGLISH_BRITISH),
+                Language.CN: cast(deepl.Language, deepl.Language.CHINESE),
+            }[lang]
+        except KeyError:
+            raise ValueError(f"Unknown language: {lang=}")
 
 
 def get_translator(
@@ -80,10 +89,16 @@ def get_translator(
 
 
 def test_deepl_translate():
-    translator = DeepLTranslator(CONFIG.translator_key, Language.EN, Language.CN)
+    translator = DeepLTranslator(CONFIG.translator_key, Language.CN, Language.EN)
     test_translate = translator.translate("Hello, world")
-    assert test_translate == "你好，世界", f"{test_translate=}"
+    assert test_translate == "你好，世界", f"expected '你好，世界', got {test_translate=}"
+
+
+def test_language():
+    assert Language("Spanish") == Language.ES
+    assert Language("American_English") == Language.EN_US
 
 
 if __name__ == "__main__":
+    test_language()
     test_deepl_translate()
