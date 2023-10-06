@@ -144,8 +144,7 @@ def real_time_transcribe():
     phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
     audio_buffer = bytes()  # Current raw audio bytes.
     transcription = Transcriptions(
-        spontaneous_print=True,
-        spontaneous_translator=get_translator(Language.CN, Language.EN),
+        spontaneous_print=True, spontaneous_translator=get_translator()
     )
 
     while True:

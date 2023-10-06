@@ -75,13 +75,13 @@ class DeepLTranslator(TranslatorProtocol):
         return result.text
 
 
-def get_translator(
-    target_lang: Language, source_lang: Optional[Language] = None
-) -> Optional[TranslatorProtocol]:
+def get_translator() -> Optional[TranslatorProtocol]:
     if CONFIG.translator == "NONE":
         return None
     if CONFIG.translator == "DEEPL":
-        return DeepLTranslator(CONFIG.translator_key, target_lang, source_lang)
+        return DeepLTranslator(
+            CONFIG.translator_key, CONFIG.target_lang, CONFIG.source_lang
+        )
     else:
         raise ValueError(f"Unknown translator: {CONFIG.translator=}")
 

@@ -16,6 +16,8 @@ with open(cfg_path) as cfg_file:
     cfg = yaml.safe_load(cfg_file)
     parsed_cfg["model"] = cfg["model"] or "small"
     parsed_cfg["translator"] = cfg["translator"] or "NONE"
+    parsed_cfg["source_lang"] = cfg["source_lang"] or "EN"
+    parsed_cfg["target_lang"] = cfg["target_lang"] or "CN"
 
 
 # parse translator api key
@@ -30,7 +32,10 @@ if parsed_cfg["translator"] == "DEEPL":
 else:
     raise ConfigLoadingError(f"Unknown translator: {parsed_cfg['translator'] =}")
 
-FrozenConfig = namedtuple("ImmutableDict", ["translator", "translator_key", "model"])
+FrozenConfig = namedtuple(
+    "ImmutableDict",
+    ["translator", "translator_key", "model", "source_lang", "target_lang"],
+)
 CONFIG = FrozenConfig(**parsed_cfg)
 parsed_cfg.clear()
 
