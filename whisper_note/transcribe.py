@@ -161,9 +161,17 @@ class Transcriptions:
         return f"Transcripts({self.timestamp}, {self.text})"
 
 
+import yaml
+
+
 def main():
     args = build_args()
-    args.model = "small"  # #TODO: add config file
+    cfg_path = os.path.abspath(__file__ + "/../../config.yml")
+    with open(cfg_path) as cfg_file:
+        cfg = yaml.safe_load(cfg_file)
+        args.model = cfg["model"]  # TODO: add config parser. throws error
+
+    # Now, 'data' contains the parsed YAML data as a Python dictionary
 
     # Thread safe Queue for passing data from the threaded recording callback.
     data_queue: SampleQueue = Queue()
