@@ -153,8 +153,9 @@ class Transcriptions:
         # Reprint the updated transcription to a cleared terminal.
         if clear:
             os.system(self.__CLEAR_COMMAND)
-        for line in self.text:
-            print(line)
+        for timestamp, text in zip(self.timestamp, self.text):
+            ts_text = timestamp.strftime("%H:%M:%S:%f")[:-3]  # milliseconds
+            print(f"{ts_text} | {text}")  # #TODO: consider line wrap for text
         print("", end="", flush=True)
 
     def __str__(self) -> str:
@@ -175,7 +176,7 @@ def main():
     print("Model loaded. Recording...")  # Cue the user that we're ready to go.
 
     phrase_timeout = timedelta(seconds=args.phrase_timeout)
-    phrase_timestamp = datetime.utcnow()  # The last time of retrieved data.
+    phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
     audio_buffer = bytes()  # Current raw audio bytes.
     transcription = Transcriptions()
 
