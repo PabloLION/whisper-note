@@ -138,9 +138,9 @@ class Transcriptions:
         self.timestamp = []
         self.text = []
 
-    def add(self, timestamp: datetime, text: str) -> None:
-        self.timestamp.append(timestamp)
-        self.text.append(text)
+    def new_phrase(self) -> None:
+        self.timestamp.append(datetime.utcnow())
+        self.text.append("")
 
     def update_last(self, text: str) -> None:
         self.text[-1] = text
@@ -150,6 +150,7 @@ class Transcriptions:
         self.text.clear()
 
     def print(self, clear: bool = False) -> None:
+        # Reprint the updated transcription to a cleared terminal.
         if clear:
             os.system(self.__CLEAR_COMMAND)
         for line in self.text:
@@ -176,7 +177,7 @@ def main():
     phrase_timeout = timedelta(seconds=args.phrase_timeout)
     phrase_timestamp = datetime.utcnow()  # The last time of retrieved data.
     audio_buffer = bytes()  # Current raw audio bytes.
-    transcription = [""]
+    transcription = Transcriptions()
 
     while True:
         try:  # to not block the keyboard interrupt
@@ -215,18 +216,12 @@ def main():
 
         # Add new item to transcription, or append to the existing last phrase.
         if is_new_phrase:
-            transcription.append("")
-        transcription[-1] = text
-
-        # Reprint the updated transcription to a cleared terminal.
-        os.system("cls" if os.name == "nt" else "clear")  # #TODO: extract
-        for line in transcription:
-            print(line)
-        print("", end="", flush=True)  # Flush stdout.
+            transcription.new_phrase()
+        transcription.update_last(text)
+        transcription.print(clear=True)
 
     print("\n\nTranscription:")
-    for line in transcription:
-        print(line)
+    transcription.print(clear=True)
 
 
 if __name__ == "__main__":
