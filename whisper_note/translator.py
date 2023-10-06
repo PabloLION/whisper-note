@@ -67,28 +67,12 @@ class DeepLTranslator(TranslatorProtocol):
     def translate(self, text: str) -> str:
         result = self.translator.translate_text(
             text,
-            target_lang=self.to_deepl_language(self.target_lang),
-            source_lang=self.to_deepl_language(self.source_lang),
+            target_lang=self.target_lang.to_deepl_language(),
+            source_lang=self.source_lang and self.source_lang.to_deepl_language(),
         )
         if isinstance(result, list):
             raise ValueError(f"DeepL returned a list of translations: {result=}")
         return result.text
-
-    @overload
-    @staticmethod
-    def to_deepl_language(lang: None) -> None:
-        ...
-
-    @overload
-    @staticmethod
-    def to_deepl_language(lang: Language) -> deepl.Language:
-        ...
-
-    @staticmethod
-    def to_deepl_language(lang: Optional[Language]) -> Optional[deepl.Language]:
-        if lang is None:
-            return None
-        return lang.to_deepl_language()
 
 
 def get_translator(
@@ -106,6 +90,10 @@ def test_deepl_translate():
     translator = DeepLTranslator(CONFIG.translator_key, Language.CN, Language.EN)
     test_translate = translator.translate("Hello, world")
     assert test_translate == "你好，世界", f"expected '你好，世界', got {test_translate=}"
+
+    translator = DeepLTranslator(CONFIG.translator_key, Language.CN, None)
+    test_translate = translator.translate("お名前をいただけますか？")
+    assert test_translate == "请问你叫什么名字？", f"expected '请问你叫什么名字？', got {test_translate=}"
 
 
 def test_language():
