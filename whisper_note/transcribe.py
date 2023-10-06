@@ -120,7 +120,7 @@ def initialize_source_recorder_with_queue(
 def load_model(args) -> whisper.Whisper:
     # Load / Download model
     model = args.model
-    if args.model != "large" and not args.non_english:
+    if args.model != "large" and not args.non_english and not model.endswith(".en"):
         model = model + ".en"
     print(f"Loading whisper model '{model}'")
     return whisper.load_model(model)
@@ -129,7 +129,7 @@ def load_model(args) -> whisper.Whisper:
 import yaml
 
 
-def main():
+def real_time_transcribe():
     args = build_args()
     cfg_path = os.path.abspath(__file__ + "/../../config.yml")
     with open(cfg_path) as cfg_file:
@@ -147,7 +147,7 @@ def main():
     phrase_timeout = timedelta(seconds=args.phrase_timeout)
     phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
     audio_buffer = bytes()  # Current raw audio bytes.
-    transcription = Transcriptions()
+    transcription = Transcriptions(print_on_fly=True)
 
     while True:
         try:  # to not block the keyboard interrupt
@@ -188,11 +188,7 @@ def main():
         if is_new_phrase:
             transcription.new_phrase()
         transcription.update_last(text)
-        transcription.print(clear=True)
-
-    print("\n\nTranscription:")
-    transcription.print(clear=True)
 
 
 if __name__ == "__main__":
-    main()
+    real_time_transcribe()
