@@ -55,9 +55,7 @@ class Transcriptions:
         print(self.text[index])
         if self.spontaneous_translator:
             if self.translated_text[index] == "":
-                translation = self.spontaneous_translator.translate(
-                    self.text[index], target_lang=Language.ES, source_lang=Language.CN
-                )  # remove the language hardcoding here #TODO
+                translation = self.spontaneous_translator.translate(self.text[index])
                 self.translated_text[index] = translation
             print(" " * indent_len + self.translated_text[index])
 

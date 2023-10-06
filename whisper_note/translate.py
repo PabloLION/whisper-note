@@ -4,36 +4,44 @@ from parse_env_cfg import TRANSLATE, parsed_config
 import deepl
 
 
-class TranslatorProtocol(Protocol):
-    # not saving API key because it's safer and we don't need it later.
-    translator: Union[deepl.Translator, Any]  # TODO: Add other translators
-
-    def translate(
-        self, text: str, target_lang, source_lang: Optional[Any] = None
-    ) -> str:
-        ...
-
-
 class Language(Enum):
     ES = "Spanish"
     EN = "English"
     CN = "Chinese_Simplified"
 
 
+class TranslatorProtocol(Protocol):
+    # not saving API key because it's safer and we don't need it later.
+    translator: Union[deepl.Translator, Any]  # TODO: Add other translators
+
+    def __init__(
+        api_key: str, target_lang: Language, source_lang: Optional[Language] = None
+    ):
+        ...
+
+    def translate(self, text: str) -> str:
+        ...
+
+
 class DeepLTranslator(TranslatorProtocol):
     translator: deepl.Translator
 
-    def __init__(self, api_key: str):
+    def __init__(
+        self,
+        api_key: str,
+        target_lang: Language,
+        source_lang: Optional[Language] = None,
+    ):
         # #TODO add to protocol, and the translation langs
         self.translator = deepl.Translator(api_key)
+        self.target_lang = target_lang
+        self.source_lang = source_lang
 
-    def translate(
-        self, text: str, target_lang: Language, source_lang: Optional[Language] = None
-    ) -> str:
+    def translate(self, text: str) -> str:
         result = self.translator.translate_text(
             text,
-            source_lang=self.to_deepl_language(source_lang),
-            target_lang=self.to_deepl_language(target_lang),
+            source_lang=self.to_deepl_language(self.source_lang),
+            target_lang=self.to_deepl_language(self.target_lang),
         )
         if isinstance(result, list):
             raise ValueError(f"DeepL returned a list of translations: {result=}")
@@ -60,16 +68,22 @@ class DeepLTranslator(TranslatorProtocol):
         }[lang]
 
 
-def get_translator() -> TranslatorProtocol:
+def get_translator(
+    target_lang: Language, source_lang: Optional[Language] = None
+) -> TranslatorProtocol:
     if TRANSLATE == "DEEPL":
-        return DeepLTranslator(parsed_config["TRANSLATE_API_KEY"])
+        return DeepLTranslator(
+            parsed_config["TRANSLATE_API_KEY"], target_lang, source_lang
+        )
     else:
         raise ValueError(f"Unknown translator: {TRANSLATE=}")
 
 
 def test_deepl_translate():
-    translator = DeepLTranslator(parsed_config["TRANSLATE_API_KEY"])
-    test_translate = translator.translate("Hello, world!", Language.CN, Language.EN)
+    translator = DeepLTranslator(
+        parsed_config["TRANSLATE_API_KEY"], Language.EN, Language.CN
+    )
+    test_translate = translator.translate("Hello, world")
     assert test_translate == "你好，世界", f"{test_translate=}"
 
 
