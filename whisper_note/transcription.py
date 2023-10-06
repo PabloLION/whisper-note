@@ -5,7 +5,7 @@ from typing import Optional
 
 from sympy import O
 
-from whisper_note.translate import Language, TranslatorProtocol
+from whisper_note.translator import Language, TranslatorProtocol
 
 
 class Transcriptions:
