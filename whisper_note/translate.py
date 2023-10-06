@@ -57,6 +57,13 @@ class DeepLTranslator(TranslatorProtocol):
         }[lang]
 
 
+def get_translator() -> TranslatorProtocol:
+    if TRANSLATE == "deepl":
+        return DeepLTranslator(parsed_config["TRANSLATE_API_KEY"])
+    else:
+        raise ValueError(f"Unknown translator: {TRANSLATE=}")
+
+
 def test_deepl_translate():
     translator = DeepLTranslator(parsed_config["TRANSLATE_API_KEY"])
     test_translate = translator.translate("Hello, world!", Lang.CN, Lang.EN)

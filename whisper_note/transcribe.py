@@ -147,7 +147,7 @@ def real_time_transcribe():
     phrase_timeout = timedelta(seconds=args.phrase_timeout)
     phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
     audio_buffer = bytes()  # Current raw audio bytes.
-    transcription = Transcriptions(print_on_fly=True)
+    transcription = Transcriptions(spontaneous_print=True, spontaneous_translator=None)
 
     while True:
         try:  # to not block the keyboard interrupt
