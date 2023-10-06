@@ -10,6 +10,29 @@ class Language(Enum):
     EN_US = "American_English"
     EN_GB = "British_English"
     CN = "Chinese_Simplified"
+    # Aliases
+    ZH_CN = "Chinese_Simplified"
+    ZH_TW = "Chinese_Traditional"
+    ZH = "Chinese_Simplified"
+
+    def standardize(self) -> "Language":
+        return {
+            Language.ZH_CN: Language.CN,
+            Language.ZH_TW: Language.CN,
+            Language.ZH: Language.CN,
+        }.get(self, self)
+
+    def to_deepl_language(self) -> deepl.Language:
+        return cast(
+            deepl.Language,
+            {
+                Language.ES: deepl.Language.SPANISH,
+                Language.EN: deepl.Language.ENGLISH,
+                Language.EN_US: deepl.Language.ENGLISH_AMERICAN,
+                Language.EN_GB: deepl.Language.ENGLISH_BRITISH,
+                Language.CN: deepl.Language.CHINESE,
+            }[self],
+        )
 
 
 class TranslatorProtocol(Protocol):
@@ -65,16 +88,7 @@ class DeepLTranslator(TranslatorProtocol):
     def to_deepl_language(lang: Optional[Language]) -> Optional[deepl.Language]:
         if lang is None:
             return None
-        try:
-            return {
-                Language.ES: cast(deepl.Language, deepl.Language.SPANISH),
-                Language.EN: cast(deepl.Language, deepl.Language.ENGLISH),
-                Language.EN_US: cast(deepl.Language, deepl.Language.ENGLISH_AMERICAN),
-                Language.EN_GB: cast(deepl.Language, deepl.Language.ENGLISH_BRITISH),
-                Language.CN: cast(deepl.Language, deepl.Language.CHINESE),
-            }[lang]
-        except KeyError:
-            raise ValueError(f"Unknown language: {lang=}")
+        return lang.to_deepl_language()
 
 
 def get_translator(
