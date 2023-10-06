@@ -3,7 +3,7 @@ from datetime import datetime
 from textwrap import indent
 from typing import Optional
 
-from whisper_note.translate import TranslatorProtocol
+from whisper_note.translate import Language, TranslatorProtocol
 
 
 class Transcriptions:
@@ -41,12 +41,24 @@ class Transcriptions:
         self.timestamp.clear()
         self.text.clear()
 
-    def print(self, *, show_time: bool = True, clear: bool = False) -> None:
+    def print_phrase(self, with_time: bool = True) -> None:
+        if self.spontaneous_translator is None:
+            print(self.text[-1])
+            return
+        if with_time:
+            print(self.timestamp[-1])
+        if self.spontaneous_translator:
+            translated = self.spontaneous_translator.translate(
+                self.text[-1], target_lang=Language.CN, source_lang=Language.EN
+            )
+
+    def print(self, *, with_time: bool = True, clear: bool = False) -> None:
         # Reprint the updated transcription to a cleared terminal.
         if clear:
             os.system(self.__CLEAR_COMMAND)
+
         for timestamp, text in zip(self.timestamp, self.text):
-            if not show_time:
+            if not with_time:
                 print(text)
                 continue
             ts_text = timestamp.strftime("%H:%M:%S:%f")[:-3]  # milliseconds
