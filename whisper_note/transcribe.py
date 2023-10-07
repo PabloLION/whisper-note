@@ -15,7 +15,7 @@ from result import Err, Ok, Result
 
 from transcription import Transcriptions
 from whisper_note.parse_env_cfg import CONFIG
-from whisper_note.translator import Language, get_translator
+from whisper_note.supportive_class import get_translator
 
 SampleQueue = Queue[bytes]
 
