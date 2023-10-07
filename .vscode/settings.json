@@ -1,3 +1,6 @@
 {
-  "cSpell.words": ["DEEPL", "icecream"]
+  "cSpell.words": ["DEEPL", "icecream"],
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  }
 }
