@@ -15,7 +15,7 @@ from result import Err, Ok, Result
 
 from transcription import Transcriptions
 from whisper_note.parse_env_cfg import CONFIG
-from whisper_note.supportive_class import get_translator
+from whisper_note.supportive_class import get_translator, Language
 
 SampleQueue = Queue[bytes]
 
@@ -119,24 +119,24 @@ def initialize_source_recorder_with_queue(
     return source, recorder
 
 
-def load_model(args) -> whisper.Whisper:
+def load_model() -> whisper.Whisper:
     # Load / Download model
-    model = args.model
-    if args.model != "large" and not args.non_english and not model.endswith(".en"):
-        model = model + ".en"
+    model = CONFIG.model
+    if CONFIG.source_lang == Language.EN and not model.endswith(".en"):
+        model += ".en"
     print(f"Loading whisper model '{model}'")
     return whisper.load_model(model)
 
 
 def real_time_transcribe():
     args = build_args()
-    args.model = CONFIG.model  # TODO: add config parser. throws error
+    args.model = CONFIG.model
 
     # Now, 'data' contains the parsed YAML data as a Python dictionary
 
     # Thread safe Queue for passing data from the threaded recording callback.
     data_queue: SampleQueue = Queue()
-    audio_model: whisper.Whisper = load_model(args)
+    audio_model: whisper.Whisper = load_model()
     source, _ = initialize_source_recorder_with_queue(args, data_queue)
     print("Model loaded. Recording...")  # Cue the user that we're ready to go.
 
