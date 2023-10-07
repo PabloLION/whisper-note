@@ -14,8 +14,8 @@ class Transcriptions:
     time_str: list[str]
     text: list[str]
     translated_text: list[str]
-    spontaneous_print: bool
-    spontaneous_translator: Optional[TranslatorProtocol]
+    real_time_print: bool
+    real_time_translator: Optional[TranslatorProtocol]
     # maybe another full text translator
     clean_on_print: bool
 
@@ -23,16 +23,16 @@ class Transcriptions:
 
     def __init__(
         self,
-        spontaneous_print: bool,
-        spontaneous_translator: Optional[TranslatorProtocol],
+        real_time_print: bool,
+        real_time_translator: Optional[TranslatorProtocol],
         clean_on_print: bool = True,
     ) -> None:
         self.timestamp = []
         self.text = []
         self.time_str = []
         self.translated_text = []
-        self.spontaneous_print = spontaneous_print
-        self.spontaneous_translator = spontaneous_translator
+        self.real_time_print = real_time_print
+        self.real_time_translator = real_time_translator
         self.clean_on_print = clean_on_print
 
     def add_phrase(self, timestamp: datetime, text: str) -> None:
@@ -41,13 +41,12 @@ class Transcriptions:
         self.text.append(text)
         self.translated_text.append("")
 
-    def spontaneous_translate(self, index: int) -> str:
+    def real_time_translate(self, index: int) -> str:
         assert 0 <= index < len(self.text), f"Transcriptions index {index} out of range"
-        if not self.spontaneous_translator:
+        if not self.real_time_translator:
             return ""
-
         if self.translated_text[index] == "":
-            translation = self.spontaneous_translator.translate(self.text[index])
+            translation = self.real_time_translator.translate(self.text[index])
             self.translated_text[index] = translation
         return self.translated_text[index]
 
@@ -56,8 +55,8 @@ class Transcriptions:
         if with_time:
             print(self.time_str[index], end=" | ")
         print(self.text[index])
-        if self.spontaneous_translator:
-            print(" " * indent_len + self.spontaneous_translate(index))
+        if self.real_time_translator:
+            print(" " * indent_len + self.real_time_translate(index))
 
     def print_all(self, *, with_time: bool = True, clean: bool = False) -> None:
         # Reprint the updated transcription to a cleared terminal.
@@ -87,5 +86,5 @@ class Transcriptions:
         while True:
             if i >= len(self):
                 yield None
-            yield self.time_str[i], self.text[i], self.spontaneous_translate(i)
+            yield self.time_str[i], self.text[i], self.real_time_translate(i)
             i += 1
