@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import Optional
+from typing import Iterator, Optional
 
 from whisper_note.supportive_class import TranslatorProtocol
 
@@ -38,7 +38,7 @@ class Transcriptions:
         self.text.append(text)
         self.translated_text.append("")
 
-    def get_spontaneous_translation(self, index: int) -> str:
+    def spontaneous_translate(self, index: int) -> str:
         assert 0 <= index < len(self.text), f"Transcriptions index {index} out of range"
         if not self.spontaneous_translator:
             return ""
@@ -56,7 +56,7 @@ class Transcriptions:
             print(ts_text, end=" | ")
         print(self.text[index])
         if self.spontaneous_translator:
-            print(" " * indent_len + self.get_spontaneous_translation(index))
+            print(" " * indent_len + self.spontaneous_translate(index))
 
     def print_all(self, *, with_time: bool = True, clean: bool = False) -> None:
         # Reprint the updated transcription to a cleared terminal.
@@ -75,3 +75,14 @@ class Transcriptions:
 
     def __repr__(self) -> str:
         return f"Transcripts({self.timestamp}, {self.text})"
+
+    def __len__(self) -> int:
+        return len(self.text)
+
+    def __iter__(self) -> Iterator[tuple[datetime, str, str] | None]:
+        i = 0
+        while True:
+            if i >= len(self):
+                yield None
+            yield self.timestamp[i], self.text[i], self.spontaneous_translate(i)
+            i += 1
