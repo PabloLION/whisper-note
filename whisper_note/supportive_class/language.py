@@ -31,7 +31,7 @@ class Language(Enum):
                 Language.EN_US: deepl.Language.ENGLISH_AMERICAN,
                 Language.EN_GB: deepl.Language.ENGLISH_BRITISH,
                 Language.CN: deepl.Language.CHINESE,
-            }[self],
+            }[self.standardize()],
         )
 
 

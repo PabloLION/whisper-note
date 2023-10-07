@@ -3,5 +3,5 @@ translator: "DEEPL" # "NONE"(no translation) or "DEEPL".
 # translator planned to support: "GOOGLE", "MICROSOFT", "AMAZON", "YANDEX", "PAPAGO", "KAKAO"
 
 # See language codes in translator.py. Translate English to Chinese by default.
-source_language: "EN" # default source language: "EN"
-target_language: "ZH" # default target language: "ZH"
+source_lang: "Chinese_Simplified" # default: "English"
+target_lang: "American_English" # default: "Chinese_Simplified"

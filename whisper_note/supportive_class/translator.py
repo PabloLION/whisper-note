@@ -36,6 +36,8 @@ class DeepLTranslator(TranslatorProtocol):
         self.source_lang = source_lang
 
     def translate(self, text: str) -> str:
+        if text == "":
+            return ""
         result = self.translator.translate_text(
             text,
             target_lang=self.target_lang.to_deepl_language(),
