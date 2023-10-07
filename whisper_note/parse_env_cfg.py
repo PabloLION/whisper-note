@@ -56,8 +56,5 @@ def test_parse_env_and_config():
     assert CONFIG.model == "small"
 
 
-from icecream import ic
-
-ic(CONFIG)
 if __name__ == "__main__":
     test_parse_env_and_config()
