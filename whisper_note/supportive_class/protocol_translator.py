@@ -1,5 +1,5 @@
 import os
-from typing import Any, Optional, Protocol, Union
+from typing import Any, Optional, Protocol, Union, final
 import deepl
 
 from whisper_note.supportive_class import FrozenConfig
@@ -10,18 +10,19 @@ class TranslatorProtocol(Protocol):
     translator: Union[deepl.Translator, Any]  # TODO: Add other translators
     config: FrozenConfig
 
+    @final
+    def _get_api_key(self) -> str:
+        key = os.getenv(self.config.translator_env_key)
+        if key is None:
+            raise ValueError("translator api key is not set in .env file")
+        return key
+
     def __init__(
         self,
         api_key: str,
         config: FrozenConfig,
     ):
         ...
-
-    def get_api_key(self) -> str:
-        key = os.getenv(self.config.translator_env_key)
-        if key is None:
-            raise ValueError("translator api key is not set in .env file")
-        return key
 
     def translate(self, text: str) -> str:
         ...
@@ -36,7 +37,7 @@ class DeepLTranslator(TranslatorProtocol):
         config: FrozenConfig,
     ):
         self.config = config
-        self.translator = deepl.Translator(self.get_api_key())
+        self.translator = deepl.Translator(self._get_api_key())
 
     def translate(self, text: str) -> str:
         if text == "":

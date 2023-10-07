@@ -1,10 +1,11 @@
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, final
 from .enum_language import Language
 
 # I don't know how to gather the types of values dynamically
 ConfigValue = str | Language | int | None
 
 
+@final
 class FrozenConfig(NamedTuple):
     dot_env_path: str
     translator: str
