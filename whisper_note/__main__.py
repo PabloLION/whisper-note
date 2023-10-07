@@ -1,7 +1,8 @@
-from transcribe import real_time_transcribe
+from transcribe import Transcriber
 from whisper_note.parse_env_cfg import CONFIG
 
 
 if __name__ == "__main__":
-    real_time_transcribe(CONFIG)
+    transcriber = Transcriber(CONFIG)
+    transcriber.real_time_transcribe()
     print("Done!")

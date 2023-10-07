@@ -33,7 +33,7 @@ class Transcriptions:
         self.spontaneous_translator = spontaneous_translator
         self.clean_on_print = clean_on_print
 
-    def new_phrase(self, timestamp: datetime, text: str) -> None:
+    def add_phrase(self, timestamp: datetime, text: str) -> None:
         self.timestamp.append(timestamp)
         self.text.append(text)
         self.translated_text.append("")

@@ -14,50 +14,51 @@ from whisper_note.supportive_class import (
 )
 
 
-def load_whisper_model(config: FrozenConfig) -> whisper.Whisper:
-    """Load / Download whisper model."""
-    model = config.model
-    if config.source_lang == Language.EN and not model.endswith(".en"):
-        model += ".en"
-    print(f"Loading whisper model '{model}'")
-    return whisper.load_model(model)
+class Transcriber:
+    config: FrozenConfig
+    whisper_model: whisper.Whisper
+    data_q: TimedSampleQueue
+    recorder: ChunkedRecorder
+    transcription: Transcriptions
 
+    def __init__(self, config: FrozenConfig) -> None:
+        self.config = config
+        self.whisper_model = self._load_whisper_model()
+        self.data_q = Queue()  # thread-safe queue, record audio in background
+        self.recorder = ChunkedRecorder(self.data_q, config)
+        self.transcription = Transcriptions(
+            spontaneous_print=True, spontaneous_translator=get_translator(self.config)
+        )  # output transcription
 
-def real_time_transcribe(config) -> Transcriptions:
-    # background thread to record audio data
-    data_queue: TimedSampleQueue = Queue()  # thread-safe, store data from recording
+    def _load_whisper_model(self) -> whisper.Whisper:
+        """Load / Download whisper model."""
+        model = self.config.model
+        if self.config.source_lang == Language.EN and not model.endswith(".en"):
+            model += ".en"
+        print(f"Loading whisper model '{model}'")
+        whisper_model = whisper.load_model(model)
+        print("Whisper model loaded.")
+        return whisper_model
 
-    # output transcription
-    transcription = Transcriptions(
-        spontaneous_print=True, spontaneous_translator=get_translator(config)
-    )
+    def real_time_transcribe(self) -> None:
+        print("Recording started...")  # Cue the user to go.
+        while True:
+            try:  # to not block the keyboard interrupt
+                time, temp_wav = self.recorder.get_next_part()
+                if temp_wav is None:
+                    sleep(0.3)  # uninterruptedly recording in another thread
+                    continue
 
-    whisper_model: whisper.Whisper = load_whisper_model(config)
-    print("Model loaded. Recording...")  # Cue the user that we're ready to go.
+                transcribed = self.whisper_model.transcribe(
+                    temp_wav.name, fp16=torch.cuda.is_available()
+                )  # Get transcription from the whisper.
+                text = cast(str, transcribed["text"]).strip()
+                self.transcription.add_phrase(time, text)
 
-    recorder = ChunkedRecorder(data_queue, config)
+                self.transcription.print_all(clean=True)
+            except KeyboardInterrupt:
+                break
+        print("Stopping recording...")
 
-    while True:
-        try:  # to not block the keyboard interrupt
-            time, temp_wav = recorder.get_next_part()
-            if temp_wav is None:
-                sleep(0.3)  # uninterruptedly recording in another thread
-                continue
-
-            # Get transcription from the model.
-            transcribed = whisper_model.transcribe(
-                temp_wav.name, fp16=torch.cuda.is_available()
-            )
-            text = cast(str, transcribed["text"]).strip()
-
-            # Append new transcription text to transcription.
-            transcription.new_phrase(time, text)
-            transcription.print_all(clean=True)
-
-        except KeyboardInterrupt:
-            break
-
-    transcription.print_all()
-    print("Stopping recording...")
-
-    return transcription
+    def get_transcription(self):
+        return self.transcription
