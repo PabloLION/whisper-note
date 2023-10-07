@@ -1,5 +1,4 @@
-import io
-from datetime import datetime, timedelta
+from datetime import datetime
 from queue import Queue
 from sys import platform
 from tempfile import _TemporaryFileWrapper, NamedTemporaryFile
@@ -110,7 +109,7 @@ def real_time_transcribe() -> Transcriptions:
 
     # output transcription
     transcription = Transcriptions(
-        spontaneous_print=True, spontaneous_translator=get_translator()
+        spontaneous_print=True, spontaneous_translator=get_translator(CONFIG)
     )
 
     whisper_model: whisper.Whisper = load_whisper_model()

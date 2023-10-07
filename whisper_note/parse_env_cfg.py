@@ -1,24 +1,12 @@
-from typing import NamedTuple
 import dotenv
 import os
 import yaml
 
-from whisper_note.supportive_class.language import Language
+from whisper_note.supportive_class import Language, FrozenConfig
 
 
 class ConfigLoadingError(ValueError):
     pass
-
-
-class FrozenConfig(NamedTuple):
-    translator: str
-    translator_key: str
-    model: str
-    source_lang: Language
-    target_lang: Language
-    linux_microphone: str | None
-    energy_threshold: int
-    phrase_max_second: int
 
 
 DEFAULT_CONFIG_FOLDER = os.path.abspath(
@@ -27,12 +15,13 @@ DEFAULT_CONFIG_FOLDER = os.path.abspath(
 
 
 def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> FrozenConfig:
-    dotenv.load_dotenv(os.path.join(env_config_path, ".env"))
     cfg_path = os.path.join(env_config_path, "config.yml")
     parsed_cfg = {}
+    dotenv.load_dotenv(os.path.join(env_config_path, ".env"))
 
     with open(cfg_path) as cfg_file:
         cfg = yaml.safe_load(cfg_file)
+        parsed_cfg["dot_env_path"] = os.path.join(env_config_path, ".env")
         parsed_cfg["model"] = cfg.get("model", "small")
         parsed_cfg["translator"] = cfg.get("translator", "NONE")
         parsed_cfg["source_lang"] = Language(cfg.get("source_lang", "English"))
@@ -46,12 +35,9 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
     # parse translator api key
     match parsed_cfg["translator"]:
         case "NONE":
-            parsed_cfg["translator_key"] = ""
+            parsed_cfg["translator_env_key"] = ""
         case "DEEPL":
-            key = os.getenv("DEEPL_API_KEY")
-            if not key:
-                raise ConfigLoadingError("DEEPL_API_KEY is not set in .env file")
-            parsed_cfg["translator_key"] = key
+            parsed_cfg["translator_env_key"] = "DEEPL_API_KEY"
         case not_matched:
             raise ConfigLoadingError(f"Unknown translator: translator={not_matched}")
     CONFIG = FrozenConfig(**parsed_cfg)

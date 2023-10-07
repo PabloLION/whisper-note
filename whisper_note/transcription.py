@@ -3,8 +3,6 @@ from datetime import datetime
 from textwrap import indent
 from typing import Optional
 
-from sympy import O
-
 from whisper_note.supportive_class import TranslatorProtocol
 
 

@@ -1,22 +1,31 @@
-from enum import Enum
+# TODO: ren protocol_translator
+import os
 from typing import Any, Optional, Protocol, Union, cast, overload
-from parse_env_cfg import CONFIG
+from parse_env_cfg import FrozenConfig
 import deepl
 
-from whisper_note.supportive_class.language import Language
+from whisper_note.supportive_class.typed_config import DEFAULT_CONFIG
+
+from .language import Language
 
 
 class TranslatorProtocol(Protocol):
     # not saving API key because it's safer and we don't need it later.
     translator: Union[deepl.Translator, Any]  # TODO: Add other translators
+    config: FrozenConfig
 
     def __init__(
         self,
         api_key: str,
-        target_lang: Language,
-        source_lang: Optional[Language] = None,
+        config: FrozenConfig,
     ):
         ...
+
+    def get_api_key(self) -> str:
+        key = os.getenv(self.config.translator_env_key)
+        if key is None:
+            raise ValueError("translator api key is not set in .env file")
+        return key
 
     def translate(self, text: str) -> str:
         ...
@@ -24,47 +33,43 @@ class TranslatorProtocol(Protocol):
 
 class DeepLTranslator(TranslatorProtocol):
     translator: deepl.Translator
+    config: FrozenConfig
 
     def __init__(
         self,
-        api_key: str,
-        target_lang: Language,
-        source_lang: Optional[Language] = None,
+        config: FrozenConfig,
     ):
-        self.translator = deepl.Translator(api_key)
-        self.target_lang = target_lang
-        self.source_lang = source_lang
+        self.config = config
+        self.translator = deepl.Translator(self.get_api_key())
 
     def translate(self, text: str) -> str:
         if text == "":
             return ""
+        target, source = self.config.target_lang, self.config.source_lang
         result = self.translator.translate_text(
             text,
-            target_lang=self.target_lang.to_deepl_language(),
-            source_lang=self.source_lang and self.source_lang.to_deepl_language(),
+            target_lang=target.to_deepl_language(),
+            source_lang=source and source.to_deepl_language(),
         )
         if isinstance(result, list):
             raise ValueError(f"DeepL returned a list of translations: {result=}")
         return result.text
 
 
-def get_translator() -> Optional[TranslatorProtocol]:
-    if CONFIG.translator == "NONE":
-        return None
-    if CONFIG.translator == "DEEPL":
-        return DeepLTranslator(
-            CONFIG.translator_key, CONFIG.target_lang, CONFIG.source_lang
-        )
-    else:
-        raise ValueError(f"Unknown translator: {CONFIG.translator=}")
+def get_translator(config: FrozenConfig) -> Optional[TranslatorProtocol]:
+    return DeepLTranslator(config)
 
 
 def test_deepl_translate():
-    translator = DeepLTranslator(CONFIG.translator_key, Language.CN, Language.EN)
+    config = DEFAULT_CONFIG.mutated_copy(
+        target_lang=Language.CN, source_lang=Language.EN
+    )
+    translator = DeepLTranslator(config)
     test_translate = translator.translate("Hello, world")
     assert test_translate == "你好，世界", f"expected '你好，世界', got {test_translate=}"
 
-    translator = DeepLTranslator(CONFIG.translator_key, Language.CN, None)
+    config = DEFAULT_CONFIG.mutated_copy(target_lang=Language.CN, source_lang=None)
+    translator = DeepLTranslator(config)
     test_translate = translator.translate("お名前をいただけますか？")
     assert test_translate == "请问你叫什么名字？", f"expected '请问你叫什么名字？', got {test_translate=}"
 
