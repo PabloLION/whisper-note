@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from .language import Language
+from .enum_language import Language
 
 
 class FrozenConfig(NamedTuple):

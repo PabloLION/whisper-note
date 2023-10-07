@@ -1,4 +1,3 @@
-# TODO: ren protocol_translator
 import os
 from typing import Any, Optional, Protocol, Union
 import deepl
