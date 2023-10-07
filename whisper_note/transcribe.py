@@ -1,4 +1,3 @@
-import argparse
 import io
 from datetime import datetime, timedelta
 from queue import Queue
@@ -17,51 +16,6 @@ from whisper_note.parse_env_cfg import CONFIG
 from whisper_note.supportive_class import get_translator, Language
 
 SampleQueue = Queue[bytes]
-
-
-def build_args() -> argparse.Namespace:
-    # this build a default args, but we should #TODO:
-    # 1. load args from a config file
-    # 2. maybe use a typed dict instead of argparse.Namespace
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--model",
-        default="medium",
-        help="Model to use",
-        choices=["tiny", "base", "small", "medium", "large"],
-    )
-    parser.add_argument(
-        "--non_english", action="store_true", help="Don't use the english model."
-    )
-    parser.add_argument(
-        "--energy_threshold",
-        default=1000,
-        help="Energy level for mic to detect.",
-        type=int,
-    )
-    parser.add_argument(
-        "--record_timeout",
-        default=2,
-        help="How real time the recording is in seconds.",
-        type=float,
-    )
-    parser.add_argument(
-        "--phrase_timeout",
-        default=3,
-        help="How much empty space between recordings before we "
-        "consider it a new line in the transcription.",
-        type=float,
-    )
-    if "linux" in platform:
-        parser.add_argument(
-            "--default_microphone",
-            default="pulse",
-            help="Default microphone name for SpeechRecognition. "
-            "Run this with 'list' to view available Microphones.",
-            type=str,
-        )
-    args = parser.parse_args()
-    return args
 
 
 def load_microphone_source() -> Result[sr.Microphone, str]:
@@ -130,7 +84,7 @@ def real_time_transcribe() -> None:
 
     # Thread safe Queue for passing data from the threaded recording callback.
     data_queue: SampleQueue = Queue()
-    audio_model: whisper.Whisper = load_whisper_model()
+    whisper_model: whisper.Whisper = load_whisper_model()
     source, _ = initialize_source_recorder_with_queue(data_queue)
     print("Model loaded. Recording...")  # Cue the user that we're ready to go.
 
@@ -173,7 +127,7 @@ def real_time_transcribe() -> None:
         temp_wav.write(wav_bytes.read())  # Write wav bytes to the temp file
 
         # Get transcription from the model.
-        result = audio_model.transcribe(temp_wav.name, fp16=torch.cuda.is_available())
+        result = whisper_model.transcribe(temp_wav.name, fp16=torch.cuda.is_available())
         text = cast(str, result["text"]).strip()
 
         # Add new item to transcription, or append to the existing last phrase.
