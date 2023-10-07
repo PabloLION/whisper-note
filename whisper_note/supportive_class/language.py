@@ -33,3 +33,13 @@ class Language(Enum):
                 Language.CN: deepl.Language.CHINESE,
             }[self],
         )
+
+
+def test_language_enum():
+    assert Language("Spanish") == Language.ES
+    assert Language.__getitem__("EN") == Language.EN
+    assert Language("American_English") == Language.EN_US
+
+
+if __name__ == "__main__":
+    test_language_enum()

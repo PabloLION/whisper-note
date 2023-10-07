@@ -67,11 +67,5 @@ def test_deepl_translate():
     assert test_translate == "请问你叫什么名字？", f"expected '请问你叫什么名字？', got {test_translate=}"
 
 
-def test_language():
-    assert Language("Spanish") == Language.ES
-    assert Language("American_English") == Language.EN_US
-
-
 if __name__ == "__main__":
-    test_language()
     test_deepl_translate()
