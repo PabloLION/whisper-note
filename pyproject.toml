@@ -6,6 +6,10 @@ authors = ["PabloLION <36828324+PabloLION@users.noreply.github.com>"]
 readme = "README.md"
 packages = [{ include = "whisper_note" }]
 
+[tool.poetry.scripts]
+whisper-note = "whisper_note.__main__:run"
+note = "whisper_note.__main__:run"
+
 [tool.poetry.dependencies]
 python = ">3.9,<3.12"                                              # 3.12 blocks numpy for `distutils`
 SpeechRecognition = "^3.10.0"
@@ -16,7 +20,6 @@ deepl = "^1.15.0"
 pyyaml = "^6.0.1"
 python-dotenv = "^1.0.0"
 numba = "^0.58.0"                                                  # override openai-whisper's default none numba version
-
 
 [tool.poetry.group.dev.dependencies]
 icecream = "^2.1.3"
