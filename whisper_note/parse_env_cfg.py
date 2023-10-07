@@ -16,6 +16,10 @@ DEFAULT_CONFIG_FOLDER = os.path.abspath(
 
 def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> FrozenConfig:
     cfg_path = os.path.join(env_config_path, "config.yml")
+    env_path = os.path.join(env_config_path, ".env")
+    assert os.path.exists(cfg_path), f"config.yml not found in {env_config_path=}"
+    assert os.path.exists(env_path), f".env not found in {env_config_path=}"
+
     parsed_cfg = {}
     dotenv.load_dotenv(os.path.join(env_config_path, ".env"))
 

@@ -1,12 +1,9 @@
 # TODO: ren protocol_translator
 import os
-from typing import Any, Optional, Protocol, Union, cast, overload
-from parse_env_cfg import FrozenConfig
+from typing import Any, Optional, Protocol, Union
 import deepl
 
-from whisper_note.supportive_class.typed_config import DEFAULT_CONFIG
-
-from .language import Language
+from whisper_note.supportive_class import FrozenConfig
 
 
 class TranslatorProtocol(Protocol):
@@ -58,21 +55,3 @@ class DeepLTranslator(TranslatorProtocol):
 
 def get_translator(config: FrozenConfig) -> Optional[TranslatorProtocol]:
     return DeepLTranslator(config)
-
-
-def test_deepl_translate():
-    config = DEFAULT_CONFIG.mutated_copy(
-        target_lang=Language.CN, source_lang=Language.EN
-    )
-    translator = DeepLTranslator(config)
-    test_translate = translator.translate("Hello, world")
-    assert test_translate == "你好，世界", f"expected '你好，世界', got {test_translate=}"
-
-    config = DEFAULT_CONFIG.mutated_copy(target_lang=Language.CN, source_lang=None)
-    translator = DeepLTranslator(config)
-    test_translate = translator.translate("お名前をいただけますか？")
-    assert test_translate == "请问你叫什么名字？", f"expected '请问你叫什么名字？', got {test_translate=}"
-
-
-if __name__ == "__main__":
-    test_deepl_translate()
