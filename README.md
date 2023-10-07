@@ -47,6 +47,7 @@ Most of this should be converted to GitHub Issues when published.
   - Different models by user speech input
   - Add export of full wav file. (can be chunked)
   - summary of the text with ChatGPT
+  - input aggregated wav file for better recognition, translation, etc.
 - UI:
   - Maybe add [textual](https://github.com/Textualize/textual) as a front end
   - Add a "Recording..." indicator every 5 seconds the input is idle.

@@ -2,9 +2,8 @@ import argparse
 from sys import platform
 
 
-def build_args() -> argparse.Namespace:
-    # this build a default args, but we should #TODO:
-    # 1. load args from a cli and parse it to typed frozen config file
+def build_default_args() -> argparse.Namespace:
+    # #TODO: load args from cli and parse it to typed frozen config file
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model",

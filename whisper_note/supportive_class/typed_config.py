@@ -1,5 +1,8 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 from .enum_language import Language
+
+# I don't know how to gather the types of values dynamically
+ConfigValue = str | Language | int | None
 
 
 class FrozenConfig(NamedTuple):
@@ -9,13 +12,11 @@ class FrozenConfig(NamedTuple):
     model: str
     source_lang: Language
     target_lang: Language
-    linux_microphone: str | None
+    linux_microphone: Optional[str]
     energy_threshold: int
     phrase_max_second: int
 
-    def mutated_copy(
-        self: "FrozenConfig", **kwargs: str | Language | None | int
-    ) -> "FrozenConfig":
+    def mutated_copy(self: "FrozenConfig", **kwargs: ConfigValue) -> "FrozenConfig":
         return FrozenConfig(**{**self._asdict(), **kwargs})
 
 
