@@ -21,6 +21,7 @@ deepl = "^1.15.0"
 pyyaml = "^6.0.1"
 python-dotenv = "^1.0.0"
 numba = "^0.58.0"                                                  # override openai-whisper's default none numba version
+textual = "^0.38.1"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.2"
