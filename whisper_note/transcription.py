@@ -1,6 +1,5 @@
 import os
 from datetime import datetime
-from textwrap import indent
 from typing import Optional
 
 from whisper_note.supportive_class import TranslatorProtocol

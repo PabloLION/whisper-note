@@ -11,19 +11,18 @@ import whisper
 from result import Err, Ok, Result
 
 from transcription import Transcriptions
-from whisper_note.parse_env_cfg import CONFIG
-from whisper_note.supportive_class import get_translator, Language
+from whisper_note.supportive_class import get_translator, Language, FrozenConfig
 
 TimedSampleQueue = Queue[tuple[datetime, bytes]]
 
 
-def load_microphone_source() -> Result[sr.Microphone, str]:
+def load_microphone_source(config: FrozenConfig) -> Result[sr.Microphone, str]:
     if "linux" not in platform:
         source = sr.Microphone(sample_rate=16000)
         return Ok(source)
 
     # only Linux users need this to prevent permanent application hang / crash
-    mic_name = CONFIG.linux_microphone
+    mic_name = config.linux_microphone
     if not mic_name or mic_name == "list":
         print("Showing available microphone devices: ")
         for index, name in enumerate(sr.Microphone.list_microphone_names()):
@@ -41,13 +40,14 @@ def load_microphone_source() -> Result[sr.Microphone, str]:
 
 def initialize_source_recorder_with_queue(
     data_queue: TimedSampleQueue,
+    config: FrozenConfig,
 ) -> tuple[sr.Microphone, sr.Recognizer]:
     # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.
     recorder = sr.Recognizer()
-    recorder.energy_threshold = CONFIG.energy_threshold
+    recorder.energy_threshold = config.energy_threshold
     # Definitely do this, dynamic energy compensation lowers the energy threshold dramatically to a point where the SpeechRecognizer never stops recording.
     recorder.dynamic_energy_threshold = False
-    source = load_microphone_source().or_else(lambda err: exit(err)).unwrap()
+    source = load_microphone_source(config).or_else(lambda err: exit(err)).unwrap()
 
     with source:
         recorder.adjust_for_ambient_noise(source)
@@ -66,15 +66,15 @@ def initialize_source_recorder_with_queue(
     # here the recording is splitted to chunks of length <= phrase_max_second
     # or splitted by silence. It's not very few bytes.
     recorder.listen_in_background(
-        source, record_callback, phrase_time_limit=CONFIG.phrase_max_second
+        source, record_callback, phrase_time_limit=config.phrase_max_second
     )
     return source, recorder
 
 
-def load_whisper_model() -> whisper.Whisper:
+def load_whisper_model(config) -> whisper.Whisper:
     """Load / Download whisper model."""
-    model = CONFIG.model
-    if CONFIG.source_lang == Language.EN and not model.endswith(".en"):
+    model = config.model
+    if config.source_lang == Language.EN and not model.endswith(".en"):
         model += ".en"
     print(f"Loading whisper model '{model}'")
     return whisper.load_model(model)
@@ -86,9 +86,9 @@ class ChunkedRecorder:
     temp_wav: _TemporaryFileWrapper
     sample_rate_width: tuple[int, int]
 
-    def __init__(self, data_queue: TimedSampleQueue):
+    def __init__(self, data_queue: TimedSampleQueue, config: FrozenConfig):
         self.data_queue = data_queue
-        self.source, _ = initialize_source_recorder_with_queue(data_queue)
+        self.source, _ = initialize_source_recorder_with_queue(data_queue, config)
         self.sample_rate_width = (self.source.SAMPLE_RATE, self.source.SAMPLE_WIDTH)
 
     def get_next_part(self) -> tuple[datetime, _TemporaryFileWrapper | None]:
@@ -103,19 +103,19 @@ class ChunkedRecorder:
         return (time, temp_wav)
 
 
-def real_time_transcribe() -> Transcriptions:
+def real_time_transcribe(config) -> Transcriptions:
     # background thread to record audio data
     data_queue: TimedSampleQueue = Queue()  # thread-safe, store data from recording
 
     # output transcription
     transcription = Transcriptions(
-        spontaneous_print=True, spontaneous_translator=get_translator(CONFIG)
+        spontaneous_print=True, spontaneous_translator=get_translator(config)
     )
 
-    whisper_model: whisper.Whisper = load_whisper_model()
+    whisper_model: whisper.Whisper = load_whisper_model(config)
     print("Model loaded. Recording...")  # Cue the user that we're ready to go.
 
-    recorder = ChunkedRecorder(data_queue)
+    recorder = ChunkedRecorder(data_queue, config)
 
     while True:
         try:  # to not block the keyboard interrupt
