@@ -86,13 +86,12 @@ def load_microphone_source() -> Result[sr.Microphone, str]:
     return Ok(source)
 
 
-# def load_whisper_model(args) -> Result[whisper.Whisper, str]:
 def initialize_source_recorder_with_queue(
-    args: argparse.Namespace, data_queue: SampleQueue
+    data_queue: SampleQueue,
 ) -> tuple[sr.Microphone, sr.Recognizer]:
     # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.
     recorder = sr.Recognizer()
-    recorder.energy_threshold = args.energy_threshold
+    recorder.energy_threshold = CONFIG.energy_threshold
     # Definitely do this, dynamic energy compensation lowers the energy threshold dramatically to a point where the SpeechRecognizer never stops recording.
     recorder.dynamic_energy_threshold = False
     source = load_microphone_source().or_else(lambda err: exit(err)).unwrap()
@@ -112,12 +111,12 @@ def initialize_source_recorder_with_queue(
     # Create a background thread that will pass us raw audio bytes.
     # We could do this manually but SpeechRecognizer provides a nice helper.
     recorder.listen_in_background(
-        source, record_callback, phrase_time_limit=args.record_timeout
+        source, record_callback, phrase_time_limit=CONFIG.record_timeout
     )
     return source, recorder
 
 
-def load_model() -> whisper.Whisper:
+def load_whisper_model() -> whisper.Whisper:
     # Load / Download model
     model = CONFIG.model
     if CONFIG.source_lang == Language.EN and not model.endswith(".en"):
@@ -126,19 +125,16 @@ def load_model() -> whisper.Whisper:
     return whisper.load_model(model)
 
 
-def real_time_transcribe():
-    args = build_args()
-    args.model = CONFIG.model
-
+def real_time_transcribe() -> None:
     # Now, 'data' contains the parsed YAML data as a Python dictionary
 
     # Thread safe Queue for passing data from the threaded recording callback.
     data_queue: SampleQueue = Queue()
-    audio_model: whisper.Whisper = load_model()
-    source, _ = initialize_source_recorder_with_queue(args, data_queue)
+    audio_model: whisper.Whisper = load_whisper_model()
+    source, _ = initialize_source_recorder_with_queue(data_queue)
     print("Model loaded. Recording...")  # Cue the user that we're ready to go.
 
-    phrase_timeout = timedelta(seconds=args.phrase_timeout)
+    phrase_timeout = timedelta(seconds=CONFIG.phrase_timeout)
     phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
     audio_buffer = bytes()  # Current raw audio bytes.
     transcription = Transcriptions(

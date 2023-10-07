@@ -17,6 +17,9 @@ class FrozenConfig(NamedTuple):
     source_lang: Language
     target_lang: Language
     linux_microphone: str | None
+    energy_threshold: int
+    record_timeout: int
+    phrase_timeout: int
 
 
 DEFAULT_CONFIG_FOLDER = os.path.abspath(
@@ -38,6 +41,9 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
             cfg.get("target_lang", "Chinese_Simplified")
         )
         parsed_cfg["linux_microphone"] = cfg.get("linux_microphone", None)
+        parsed_cfg["energy_threshold"] = cfg.get("energy_threshold", 1000)
+        parsed_cfg["record_timeout"] = cfg.get("record_timeout", 2)
+        parsed_cfg["phrase_timeout"] = cfg.get("phrase_timeout", 3)
 
     # parse translator api key
     match parsed_cfg["translator"]:
