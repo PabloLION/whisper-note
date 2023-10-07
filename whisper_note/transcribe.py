@@ -73,7 +73,7 @@ def initialize_source_recorder_with_queue(
 
 
 def load_whisper_model() -> whisper.Whisper:
-    # Load / Download model
+    """Load / Download whisper model."""
     model = CONFIG.model
     if CONFIG.source_lang == Language.EN and not model.endswith(".en"):
         model += ".en"
@@ -122,7 +122,7 @@ def real_time_transcribe() -> Transcriptions:
         try:  # to not block the keyboard interrupt
             time, temp_wav = recorder.get_next_part()
             if temp_wav is None:
-                sleep(0.1)
+                sleep(0.3)  # uninterruptedly recording in another thread
                 continue
 
             # Get transcription from the model.

@@ -18,6 +18,7 @@ class Transcriptions:
     translated_text: list[str]
     spontaneous_print: bool
     spontaneous_translator: Optional[TranslatorProtocol]
+    # maybe another full text translator
     clean_on_print: bool
 
     __CLEAR_COMMAND = "cls" if os.name == "nt" else "clear"
@@ -39,12 +40,6 @@ class Transcriptions:
         self.timestamp.append(timestamp)
         self.text.append(text)
         self.translated_text.append("")
-
-    def _update_last(self, text: str) -> None:
-        # deprecating #TODO
-        self.text[-1] = text
-        if self.spontaneous_print:
-            self.print_all(clean=self.clean_on_print)
 
     def clear(self) -> None:  # never used
         self.timestamp.clear()

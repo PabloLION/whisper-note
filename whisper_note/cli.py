@@ -4,8 +4,7 @@ from sys import platform
 
 def build_args() -> argparse.Namespace:
     # this build a default args, but we should #TODO:
-    # 1. load args from a config file
-    # 2. maybe use a typed dict instead of argparse.Namespace
+    # 1. load args from a cli and parse it to typed frozen config file
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model",
