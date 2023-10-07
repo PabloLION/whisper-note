@@ -33,6 +33,7 @@ class Transcriptions:
         self.spontaneous_translator = spontaneous_translator
 
     def new_phrase(self) -> None:
+        # #FIX: wrong timestamp, should use recording start time.
         self.timestamp.append(datetime.utcnow())
         self.text.append("")
         self.translated_text.append("")

@@ -42,6 +42,7 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
         )
         parsed_cfg["linux_microphone"] = cfg.get("linux_microphone", None)
         parsed_cfg["energy_threshold"] = cfg.get("energy_threshold", 1000)
+        # #FIX: these two are the same thing.
         parsed_cfg["record_timeout"] = cfg.get("record_timeout", 2)
         parsed_cfg["phrase_timeout"] = cfg.get("phrase_timeout", 3)
 
