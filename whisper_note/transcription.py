@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from textwrap import wrap
 from typing import Iterator, Optional
 
 from whisper_note.supportive_class import TranslatorProtocol
@@ -49,6 +50,21 @@ class Transcriptions:
             translation = self.real_time_translator.translate(self.text[index])
             self.translated_text[index] = translation
         return self.translated_text[index]
+
+    def pretty_format_phrase(self, index: int) -> str:
+        l_indent = " " * 15  # 15==len("HH:MM:SS:fff | ")
+        r_indent = " " * 10  # 10==len("  | ✓ | ✓ ")
+        line_width = -25  # 25==len(l_indent + r_indent)
+        text, translation = self.text[index], self.translated_text[index]
+
+        wrapped_text = wrap(self.text[index], line_width)
+        wrapped_translation = wrap(self.translated_text[index], line_width)
+
+        s = ""
+        s += " | "
+        if self.real_time_translator:
+            s += "\n" + l_indent + self.real_time_translate(index)
+        return s
 
     def print_phrase(self, index: int, with_time: bool = False) -> None:
         indent_len = 15 if with_time else 0  # 15==len("HH:MM:SS:fff | ")
