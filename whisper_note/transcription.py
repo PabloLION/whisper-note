@@ -11,6 +11,7 @@ class Transcriptions:
     """
 
     timestamp: list[datetime]
+    time_str: list[str]
     text: list[str]
     translated_text: list[str]
     spontaneous_print: bool
@@ -28,6 +29,7 @@ class Transcriptions:
     ) -> None:
         self.timestamp = []
         self.text = []
+        self.time_str = []
         self.translated_text = []
         self.spontaneous_print = spontaneous_print
         self.spontaneous_translator = spontaneous_translator
@@ -35,6 +37,7 @@ class Transcriptions:
 
     def add_phrase(self, timestamp: datetime, text: str) -> None:
         self.timestamp.append(timestamp)
+        self.time_str.append(timestamp.strftime("%H:%M:%S:%f")[:-3])  # milliseconds
         self.text.append(text)
         self.translated_text.append("")
 
@@ -48,12 +51,10 @@ class Transcriptions:
             self.translated_text[index] = translation
         return self.translated_text[index]
 
-    def print_phrase(self, index: int, with_time: bool) -> None:
-        indent_len = 0
-        if with_time is not None:
-            ts_text = self.timestamp[index].strftime("%H:%M:%S:%f")[:-3]  # milliseconds
-            indent_len = len(ts_text) + 3
-            print(ts_text, end=" | ")
+    def print_phrase(self, index: int, with_time: bool = False) -> None:
+        indent_len = 15 if with_time else 0  # 15==len("HH:MM:SS:fff | ")
+        if with_time:
+            print(self.time_str[index], end=" | ")
         print(self.text[index])
         if self.spontaneous_translator:
             print(" " * indent_len + self.spontaneous_translate(index))
@@ -68,7 +69,9 @@ class Transcriptions:
 
     def clear(self) -> None:  # never used
         self.timestamp.clear()
+        self.time_str.clear()
         self.text.clear()
+        self.translated_text.clear()
 
     def __str__(self) -> str:
         return "\n".join(self.text)
@@ -79,10 +82,10 @@ class Transcriptions:
     def __len__(self) -> int:
         return len(self.text)
 
-    def __iter__(self) -> Iterator[tuple[datetime, str, str] | None]:
+    def __iter__(self) -> Iterator[tuple[str, str, str] | None]:
         i = 0
         while True:
             if i >= len(self):
                 yield None
-            yield self.timestamp[i], self.text[i], self.spontaneous_translate(i)
+            yield self.time_str[i], self.text[i], self.spontaneous_translate(i)
             i += 1
