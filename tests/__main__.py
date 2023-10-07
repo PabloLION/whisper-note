@@ -3,7 +3,7 @@ import sys
 import pytest
 
 
-def run_all():
+def run_all_tests():
     """Run all tests in the tests/ directory."""
     print("Running all tests...")
     pytest.main(["."])
@@ -11,4 +11,4 @@ def run_all():
 
 
 if __name__ == "__main__":
-    run_all()
+    run_all_tests()
