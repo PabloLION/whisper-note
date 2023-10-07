@@ -38,9 +38,15 @@ class Transcriptions:
         self.text.append(text)
         self.translated_text.append("")
 
-    def clear(self) -> None:  # never used
-        self.timestamp.clear()
-        self.text.clear()
+    def get_spontaneous_translation(self, index: int) -> str:
+        assert 0 <= index < len(self.text), f"Transcriptions index {index} out of range"
+        if not self.spontaneous_translator:
+            return ""
+
+        if self.translated_text[index] == "":
+            translation = self.spontaneous_translator.translate(self.text[index])
+            self.translated_text[index] = translation
+        return self.translated_text[index]
 
     def print_phrase(self, index: int, with_time: bool) -> None:
         indent_len = 0
@@ -50,10 +56,7 @@ class Transcriptions:
             print(ts_text, end=" | ")
         print(self.text[index])
         if self.spontaneous_translator:
-            if self.translated_text[index] == "":
-                translation = self.spontaneous_translator.translate(self.text[index])
-                self.translated_text[index] = translation
-            print(" " * indent_len + self.translated_text[index])
+            print(" " * indent_len + self.get_spontaneous_translation(index))
 
     def print_all(self, *, with_time: bool = True, clean: bool = False) -> None:
         # Reprint the updated transcription to a cleared terminal.
@@ -62,6 +65,10 @@ class Transcriptions:
         for index in range(len(self.text)):
             self.print_phrase(index, with_time)
         print("", end="", flush=True)
+
+    def clear(self) -> None:  # never used
+        self.timestamp.clear()
+        self.text.clear()
 
     def __str__(self) -> str:
         return "\n".join(self.text)
