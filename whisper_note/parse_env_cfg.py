@@ -9,9 +9,7 @@ class ConfigLoadingError(ValueError):
     pass
 
 
-DEFAULT_CONFIG_FOLDER = os.path.abspath(
-    os.path.join(os.path.abspath(__file__), "..", "..")
-)
+DEFAULT_CONFIG_FOLDER = os.path.abspath(os.path.join(__file__, "..", ".."))
 
 
 def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> FrozenConfig:
@@ -50,12 +48,3 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
 
 
 CONFIG = parse_env_and_config()
-
-
-def test_parse_env_and_config():
-    assert CONFIG.translator == "DEEPL", f"expected DEEPL, got {CONFIG.translator=}"
-    assert CONFIG.model == "small"
-
-
-if __name__ == "__main__":
-    test_parse_env_and_config()
