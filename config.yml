@@ -4,8 +4,7 @@ microphone_energy_threshold: 1000 # default: 1000; minimum audio energy to recor
 
 ### Transcription ###
 model: "small" # "small.en"  model name
-record_timeout: 2 # default: 2; max seconds that one phrase will be recorded
-phrase_timeout: 3 # default: 3; seconds to force break a phrase
+phrase_max_second: 3 # default: 3; max seconds before forcefully break a phrase
 
 ### Translator ###
 # If translator is "NONE", source_lang and target_lang will be ignored.

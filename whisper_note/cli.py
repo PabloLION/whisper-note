@@ -23,13 +23,7 @@ def build_args() -> argparse.Namespace:
         type=int,
     )
     parser.add_argument(
-        "--record_timeout",
-        default=2,
-        help="How real time the recording is in seconds.",
-        type=float,
-    )
-    parser.add_argument(
-        "--phrase_timeout",
+        "--phrase_max_second",
         default=3,
         help="How much empty space between recordings before we "
         "consider it a new line in the transcription.",

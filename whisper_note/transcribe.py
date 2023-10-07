@@ -65,7 +65,7 @@ def initialize_source_recorder_with_queue(
     # Create a background thread that will pass us raw audio bytes.
     # We could do this manually but SpeechRecognizer provides a nice helper.
     recorder.listen_in_background(
-        source, record_callback, phrase_time_limit=CONFIG.record_timeout
+        source, record_callback, phrase_time_limit=CONFIG.phrase_max_second
     )
     return source, recorder
 
@@ -82,7 +82,7 @@ def load_whisper_model() -> whisper.Whisper:
 class ChunkedRecorder:
     data_queue: SampleQueue
     source: sr.Microphone
-    phrase_timeout = timedelta(seconds=CONFIG.phrase_timeout)
+    phrase_max_second = timedelta(seconds=CONFIG.phrase_max_second)
     phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
     audio_buffer: bytes  # Current raw audio bytes.
     temp_wav: _TemporaryFileWrapper
@@ -102,7 +102,7 @@ class ChunkedRecorder:
 
         # If enough time has passed between recordings, consider the phrase complete.
         # Clear the current audio buffer to start over with the new data.
-        is_new_phrase = now - self.phrase_timestamp > self.phrase_timeout
+        is_new_phrase = now - self.phrase_timestamp > self.phrase_max_second
         if is_new_phrase:
             self.audio_buffer = bytes()
             # keep audio_timestamp the same
