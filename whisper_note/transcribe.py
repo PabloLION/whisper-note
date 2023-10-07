@@ -1,6 +1,5 @@
 import argparse
 import io
-import os
 from datetime import datetime, timedelta
 from queue import Queue
 from sys import platform
@@ -65,18 +64,17 @@ def build_args() -> argparse.Namespace:
     return args
 
 
-def load_microphone_source(args) -> Result[sr.Microphone, str]:
+def load_microphone_source() -> Result[sr.Microphone, str]:
     if "linux" not in platform:
         source = sr.Microphone(sample_rate=16000)
         return Ok(source)
 
-    # Prevents permanent application hang and crash by using the wrong
-    # Microphone for Linux users.
-    mic_name = args.default_microphone
+    # only Linux users need this to prevent permanent application hang / crash
+    mic_name = CONFIG.linux_microphone
     if not mic_name or mic_name == "list":
         print("Showing available microphone devices: ")
         for index, name in enumerate(sr.Microphone.list_microphone_names()):
-            print(f'Found microphone with default microphone name "{name}"')
+            print(f'Found microphone with name "{name}"')
         return Err("No microphone name provided, aborting.")
     else:
         for index, name in enumerate(sr.Microphone.list_microphone_names()):
@@ -97,7 +95,7 @@ def initialize_source_recorder_with_queue(
     recorder.energy_threshold = args.energy_threshold
     # Definitely do this, dynamic energy compensation lowers the energy threshold dramatically to a point where the SpeechRecognizer never stops recording.
     recorder.dynamic_energy_threshold = False
-    source = load_microphone_source(args).or_else(lambda err: exit(err)).unwrap()
+    source = load_microphone_source().or_else(lambda err: exit(err)).unwrap()
 
     with source:
         recorder.adjust_for_ambient_noise(source)

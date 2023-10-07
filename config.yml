@@ -1,4 +1,11 @@
+### General ###
+linux_microphone: "list" # ignore if not Linux users; "list" shows all microphones.
+
+### Transcription ###
 model: "small" # "small.en"  model name
+
+### Translator ###
+# If translator is "NONE", source_lang and target_lang will be ignored.
 translator: "DEEPL" # "NONE"(no translation) or "DEEPL".
 # translator planned to support: "GOOGLE", "MICROSOFT", "AMAZON", "YANDEX", "PAPAGO", "KAKAO"
 

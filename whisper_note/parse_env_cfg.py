@@ -16,11 +16,17 @@ class FrozenConfig(NamedTuple):
     model: str
     source_lang: Language
     target_lang: Language
+    linux_microphone: str | None
 
 
-def parse_env_and_config() -> FrozenConfig:
-    dotenv.load_dotenv()  # #TODO: use dynamic env vars for test
-    cfg_path = os.path.abspath(__file__ + "/../../config.yml")
+DEFAULT_CONFIG_FOLDER = os.path.abspath(
+    os.path.join(os.path.abspath(__file__), "..", "..")
+)
+
+
+def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> FrozenConfig:
+    dotenv.load_dotenv(os.path.join(env_config_path, ".env"))
+    cfg_path = os.path.join(env_config_path, "config.yml")
     parsed_cfg = {}
 
     with open(cfg_path) as cfg_file:
@@ -31,18 +37,19 @@ def parse_env_and_config() -> FrozenConfig:
         parsed_cfg["target_lang"] = Language(
             cfg.get("target_lang", "Chinese_Simplified")
         )
+        parsed_cfg["linux_microphone"] = cfg.get("linux_microphone", None)
 
     # parse translator api key
-    # match parsed_cfg["translator"] : # #TODO: use this for python 3.10+
-    if parsed_cfg["translator"] == "NONE":
-        parsed_cfg["translator_key"] = ""
-    if parsed_cfg["translator"] == "DEEPL":
-        key = os.getenv("DEEPL_API_KEY")
-        if not key:
-            raise ConfigLoadingError("DEEPL_API_KEY is not set in .env file")
-        parsed_cfg["translator_key"] = key
-    else:
-        raise ConfigLoadingError(f"Unknown translator: {parsed_cfg['translator'] =}")
+    match parsed_cfg["translator"]:
+        case "NONE":
+            parsed_cfg["translator_key"] = ""
+        case "DEEPL":
+            key = os.getenv("DEEPL_API_KEY")
+            if not key:
+                raise ConfigLoadingError("DEEPL_API_KEY is not set in .env file")
+            parsed_cfg["translator_key"] = key
+        case not_matched:
+            raise ConfigLoadingError(f"Unknown translator: translator={not_matched}")
     CONFIG = FrozenConfig(**parsed_cfg)
     parsed_cfg.clear()
     return CONFIG
