@@ -31,6 +31,7 @@ I don't know how to install these.
 ## Use
 
 - Large model will cause the script to run slow: the recognition happens slower than a constantly speaking person, with M1 Ultra 128GB RAM.
+- Recommend to use small model: It's faster and the recognition is not bad.
 
 ## Dev
 
@@ -38,14 +39,19 @@ Most of this should be converted to GitHub Issues when published.
 
 - Trying to use [result](https://pypi.org/project/result/) to handle error, not sure how it feels.
 - The idea is to build something to substitute Otter to take notes.
-  - Check speech recognition
-  - UI: start/end, args, export to PDF/TXT/..., clean transcription, etc.
+  - Check and try speech recognition package
+- Features:
+  - start/end button
+  - export to PDF/TXT/...
+  - w/(o) translation, etc.
+  - Different models by user speech input
+  - Add export of full wav file. (can be chunked)
+- UI:
   - Maybe add [textual](https://github.com/Textualize/textual) as a front end
-  - Run model by user speech input
-  - Try small and fast English only model
   - Add a "Recording..." indicator every 5 seconds the input is idle.
   - Add logger to distinguish between log and model output
-- For translation, it seems that [DeepL](https://www.deepl.com/translator) is the best option, but it's not free. And I don't need it. So I'm just doing the most basic thing: translate the text with some API.
+  - show queue length
+- For translation, it seems that [DeepL](https://www.deepl.com/translator) is the best option, but it's not free. Given I don't need it, just doing the most basic thing: translate the text with some API.
 
 ## Special thanks
 
