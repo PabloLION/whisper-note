@@ -15,7 +15,7 @@ from transcription import Transcriptions
 from whisper_note.parse_env_cfg import CONFIG
 from whisper_note.supportive_class import get_translator, Language
 
-SampleQueue = Queue[bytes]
+TimedSampleQueue = Queue[tuple[datetime, bytes]]
 
 
 def load_microphone_source() -> Result[sr.Microphone, str]:
@@ -41,7 +41,7 @@ def load_microphone_source() -> Result[sr.Microphone, str]:
 
 
 def initialize_source_recorder_with_queue(
-    data_queue: SampleQueue,
+    data_queue: TimedSampleQueue,
 ) -> tuple[sr.Microphone, sr.Recognizer]:
     # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.
     recorder = sr.Recognizer()
@@ -59,11 +59,13 @@ def initialize_source_recorder_with_queue(
         audio: An AudioData containing the recorded bytes.
         """
         data = audio.get_raw_data()
-        data_queue.put(data)  # push the raw bytes to the thread safe queue.
+        data_queue.put((datetime.utcnow(), data))  # push bytes to thread-safe queue
         print(f"Received {len(data)} bytes of audio data.")
 
     # Create a background thread that will pass us raw audio bytes.
     # We could do this manually but SpeechRecognizer provides a nice helper.
+    # here the recording is splitted to chunks of length <= phrase_max_second
+    # or splitted by silence. It's not very few bytes.
     recorder.listen_in_background(
         source, record_callback, phrase_time_limit=CONFIG.phrase_max_second
     )
@@ -80,22 +82,22 @@ def load_whisper_model() -> whisper.Whisper:
 
 
 class ChunkedRecorder:
-    data_queue: SampleQueue
+    data_queue: TimedSampleQueue
     source: sr.Microphone
     phrase_max_second = timedelta(seconds=CONFIG.phrase_max_second)
     phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
     audio_buffer: bytes  # Current raw audio bytes.
     temp_wav: _TemporaryFileWrapper
 
-    def __init__(self, data_queue: SampleQueue):
+    def __init__(self, data_queue: TimedSampleQueue):
         self.data_queue = data_queue
         self.source, _ = initialize_source_recorder_with_queue(data_queue)
         self.audio_buffer = bytes()
 
-    def get_next_part(self) -> _TemporaryFileWrapper | None:
+    def get_next_part(self) -> tuple[datetime, _TemporaryFileWrapper | None]:
         if self.data_queue.empty():
             sleep(0.1)
-            return None
+            return (datetime.utcnow(), None)
 
         # data_queue is not empty, handle the data.
         now = datetime.utcnow()
@@ -111,8 +113,7 @@ class ChunkedRecorder:
             # keep audio_sample the same
 
         # Concatenate our current audio data with the latest audio data.
-        while not self.data_queue.empty():  # there's no better way for Queue.
-            self.audio_buffer += self.data_queue.get()
+        time, self.audio_buffer = self.data_queue.get()  # best way for Queue.
 
         # Convert the raw data to wav AudioData.
         audio_data = sr.AudioData(
@@ -122,12 +123,12 @@ class ChunkedRecorder:
 
         temp_wav = NamedTemporaryFile()  # new temp file to aggregate audio data
         temp_wav.write(wav_bytes.read())  # Write wav bytes to the temp file
-        return temp_wav
+        return (time, temp_wav)
 
 
 def real_time_transcribe() -> Transcriptions:
     # background thread to record audio data
-    data_queue: SampleQueue = Queue()  # thread-safe, store data from recording
+    data_queue: TimedSampleQueue = Queue()  # thread-safe, store data from recording
 
     # output transcription
     transcription = Transcriptions(
@@ -141,7 +142,7 @@ def real_time_transcribe() -> Transcriptions:
 
     while True:
         try:  # to not block the keyboard interrupt
-            temp_wav = recorder.get_next_part()
+            time, temp_wav = recorder.get_next_part()
             if temp_wav is None:
                 sleep(0.1)
                 continue
@@ -152,9 +153,8 @@ def real_time_transcribe() -> Transcriptions:
             )
             text = cast(str, transcribed["text"]).strip()
 
-            # #FIX: wrong comment
-            # Add new item to transcription, or append to the existing last phrase.
-            transcription.new_phrase(datetime.utcnow(), text)
+            # Append new transcription text to transcription.
+            transcription.new_phrase(time, text)
             transcription.print_all(clean=True)
 
         except KeyboardInterrupt:
