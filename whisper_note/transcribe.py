@@ -2,7 +2,7 @@ import io
 from datetime import datetime, timedelta
 from queue import Queue
 from sys import platform
-from tempfile import NamedTemporaryFile
+from tempfile import _TemporaryFileWrapper, NamedTemporaryFile
 from time import sleep
 from typing import cast
 
@@ -79,10 +79,55 @@ def load_whisper_model() -> whisper.Whisper:
     return whisper.load_model(model)
 
 
+class ChunkedRecorder:
+    data_queue: SampleQueue
+    source: sr.Microphone
+    phrase_timeout = timedelta(seconds=CONFIG.phrase_timeout)
+    phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
+    audio_buffer: bytes  # Current raw audio bytes.
+    temp_wav: _TemporaryFileWrapper
+
+    def __init__(self, data_queue: SampleQueue):
+        self.data_queue = data_queue
+        self.source, _ = initialize_source_recorder_with_queue(data_queue)
+        self.audio_buffer = bytes()
+
+    def get_next_part(self) -> _TemporaryFileWrapper | None:
+        if self.data_queue.empty():
+            sleep(0.1)
+            return None
+
+        # data_queue is not empty, handle the data.
+        now = datetime.utcnow()
+
+        # If enough time has passed between recordings, consider the phrase complete.
+        # Clear the current audio buffer to start over with the new data.
+        is_new_phrase = now - self.phrase_timestamp > self.phrase_timeout
+        if is_new_phrase:
+            self.audio_buffer = bytes()
+            # keep audio_timestamp the same
+        else:
+            self.phrase_timestamp = now
+            # keep audio_sample the same
+
+        # Concatenate our current audio data with the latest audio data.
+        while not self.data_queue.empty():  # there's no better way for Queue.
+            self.audio_buffer += self.data_queue.get()
+
+        # Convert the raw data to wav AudioData.
+        audio_data = sr.AudioData(
+            self.audio_buffer, self.source.SAMPLE_RATE, self.source.SAMPLE_WIDTH
+        )
+        wav_bytes = io.BytesIO(audio_data.get_wav_data())
+
+        temp_wav = NamedTemporaryFile()  # new temp file to aggregate audio data
+        temp_wav.write(wav_bytes.read())  # Write wav bytes to the temp file
+        return temp_wav
+
+
 def real_time_transcribe() -> Transcriptions:
     # background thread to record audio data
     data_queue: SampleQueue = Queue()  # thread-safe, store data from recording
-    source, _ = initialize_source_recorder_with_queue(data_queue)
 
     # output transcription
     transcription = Transcriptions(
@@ -92,50 +137,24 @@ def real_time_transcribe() -> Transcriptions:
     whisper_model: whisper.Whisper = load_whisper_model()
     print("Model loaded. Recording...")  # Cue the user that we're ready to go.
 
-    phrase_timeout = timedelta(seconds=CONFIG.phrase_timeout)
-    phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
-    audio_buffer = bytes()  # Current raw audio bytes.
+    recorder = ChunkedRecorder(data_queue)
 
     while True:
         try:  # to not block the keyboard interrupt
-            if data_queue.empty():
+            temp_wav = recorder.get_next_part()
+            if temp_wav is None:
                 sleep(0.1)
                 continue
 
-            # data_queue is not empty, handle the data.
-            temp_wav = NamedTemporaryFile()  # new temp file to aggregate audio data
-            now = datetime.utcnow()
-
-            # If enough time has passed between recordings, consider the phrase complete.
-            # Clear the current audio buffer to start over with the new data.
-            is_new_phrase = now - phrase_timestamp > phrase_timeout
-            if is_new_phrase:
-                audio_buffer = bytes()
-                # keep audio_timestamp the same
-            else:
-                phrase_timestamp = now
-                # keep audio_sample the same
-
-            # Concatenate our current audio data with the latest audio data.
-            while not data_queue.empty():  # there's no better way for Queue.
-                audio_buffer += data_queue.get()
-
-            # Convert the raw data to wav AudioData.
-            audio_data = sr.AudioData(
-                audio_buffer, source.SAMPLE_RATE, source.SAMPLE_WIDTH
-            )
-            wav_bytes = io.BytesIO(audio_data.get_wav_data())
-            temp_wav.write(wav_bytes.read())  # Write wav bytes to the temp file
-
             # Get transcription from the model.
-            result = whisper_model.transcribe(
+            transcribed = whisper_model.transcribe(
                 temp_wav.name, fp16=torch.cuda.is_available()
             )
-            text = cast(str, result["text"]).strip()
+            text = cast(str, transcribed["text"]).strip()
 
+            # #FIX: wrong comment
             # Add new item to transcription, or append to the existing last phrase.
-            if is_new_phrase:
-                transcription.new_phrase()
+            transcription.new_phrase()
             transcription.update_last(text)
 
         except KeyboardInterrupt:
