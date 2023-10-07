@@ -4,14 +4,14 @@ from typing import cast
 
 import torch
 import whisper
-from recorder import ChunkedRecorder
-from transcription import Transcriptions
+from whisper_note.recorder import ChunkedRecorder
 from whisper_note.supportive_class import (
     FrozenConfig,
     Language,
     TimedSampleQueue,
     get_translator,
 )
+from whisper_note.transcription import Transcriptions
 
 
 class Transcriber:

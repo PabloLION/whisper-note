@@ -4,7 +4,8 @@ from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
 
 import speech_recognition as sr
 from result import Err, Ok, Result
-from supportive_class import FrozenConfig, TimedSampleQueue
+
+from .supportive_class import FrozenConfig, TimedSampleQueue
 
 
 class ChunkedRecorder:
