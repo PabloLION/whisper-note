@@ -154,8 +154,8 @@ def real_time_transcribe() -> Transcriptions:
 
             # #FIX: wrong comment
             # Add new item to transcription, or append to the existing last phrase.
-            transcription.new_phrase()
-            transcription.update_last(text)
+            transcription.new_phrase(datetime.utcnow(), text)
+            transcription.print_all(clean=True)
 
         except KeyboardInterrupt:
             break

@@ -35,13 +35,13 @@ class Transcriptions:
         self.spontaneous_translator = spontaneous_translator
         self.clean_on_print = clean_on_print
 
-    def new_phrase(self) -> None:
-        # #FIX: wrong timestamp, should use recording start time.
-        self.timestamp.append(datetime.utcnow())
-        self.text.append("")
+    def new_phrase(self, timestamp: datetime, text: str) -> None:
+        self.timestamp.append(timestamp)
+        self.text.append(text)
         self.translated_text.append("")
 
-    def update_last(self, text: str) -> None:
+    def _update_last(self, text: str) -> None:
+        # deprecating #TODO
         self.text[-1] = text
         if self.spontaneous_print:
             self.print_all(clean=self.clean_on_print)
