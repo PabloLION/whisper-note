@@ -84,45 +84,23 @@ def load_whisper_model() -> whisper.Whisper:
 class ChunkedRecorder:
     data_queue: TimedSampleQueue
     source: sr.Microphone
-    phrase_max_second = timedelta(seconds=CONFIG.phrase_max_second)
-    phrase_timestamp = datetime.min  # Timestamp of last phrase. Force new phrase
-    audio_buffer: bytes  # Current raw audio bytes.
     temp_wav: _TemporaryFileWrapper
+    sample_rate_width: tuple[int, int]
 
     def __init__(self, data_queue: TimedSampleQueue):
         self.data_queue = data_queue
         self.source, _ = initialize_source_recorder_with_queue(data_queue)
-        self.audio_buffer = bytes()
+        self.sample_rate_width = (self.source.SAMPLE_RATE, self.source.SAMPLE_WIDTH)
 
     def get_next_part(self) -> tuple[datetime, _TemporaryFileWrapper | None]:
         if self.data_queue.empty():
-            sleep(0.1)
             return (datetime.utcnow(), None)
-
         # data_queue is not empty, handle the data.
-        now = datetime.utcnow()
-
-        # If enough time has passed between recordings, consider the phrase complete.
-        # Clear the current audio buffer to start over with the new data.
-        is_new_phrase = now - self.phrase_timestamp > self.phrase_max_second
-        if is_new_phrase:
-            self.audio_buffer = bytes()
-            # keep audio_timestamp the same
-        else:
-            self.phrase_timestamp = now
-            # keep audio_sample the same
-
-        # Concatenate our current audio data with the latest audio data.
-        time, self.audio_buffer = self.data_queue.get()  # best way for Queue.
-
-        # Convert the raw data to wav AudioData.
-        audio_data = sr.AudioData(
-            self.audio_buffer, self.source.SAMPLE_RATE, self.source.SAMPLE_WIDTH
-        )
-        wav_bytes = io.BytesIO(audio_data.get_wav_data())
-
-        temp_wav = NamedTemporaryFile()  # new temp file to aggregate audio data
-        temp_wav.write(wav_bytes.read())  # Write wav bytes to the temp file
+        time, audio_buffer = self.data_queue.get()  # best way for Queue.
+        # Convert raw data to wav file to return
+        audio_data = sr.AudioData(audio_buffer, *self.sample_rate_width)
+        temp_wav = NamedTemporaryFile()  # temp .wav file for whisper to read
+        temp_wav.write(audio_data.get_wav_data())  # Write wav to the temp file
         return (time, temp_wav)
 
 
