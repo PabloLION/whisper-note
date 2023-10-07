@@ -18,6 +18,7 @@ class Transcriptions:
     translated_text: list[str]
     spontaneous_print: bool
     spontaneous_translator: Optional[TranslatorProtocol]
+    clean_on_print: bool
 
     __CLEAR_COMMAND = "cls" if os.name == "nt" else "clear"
 
@@ -25,12 +26,14 @@ class Transcriptions:
         self,
         spontaneous_print: bool,
         spontaneous_translator: Optional[TranslatorProtocol],
+        clean_on_print: bool = True,
     ) -> None:
         self.timestamp = []
         self.text = []
         self.translated_text = []
         self.spontaneous_print = spontaneous_print
         self.spontaneous_translator = spontaneous_translator
+        self.clean_on_print = clean_on_print
 
     def new_phrase(self) -> None:
         # #FIX: wrong timestamp, should use recording start time.
@@ -41,7 +44,7 @@ class Transcriptions:
     def update_last(self, text: str) -> None:
         self.text[-1] = text
         if self.spontaneous_print:
-            self.print(clear=True)
+            self.print_all(clean=self.clean_on_print)
 
     def clear(self) -> None:  # never used
         self.timestamp.clear()
@@ -60,9 +63,9 @@ class Transcriptions:
                 self.translated_text[index] = translation
             print(" " * indent_len + self.translated_text[index])
 
-    def print(self, *, with_time: bool = True, clear: bool = False) -> None:
+    def print_all(self, *, with_time: bool = True, clean: bool = False) -> None:
         # Reprint the updated transcription to a cleared terminal.
-        if clear:
+        if clean:
             os.system(self.__CLEAR_COMMAND)
         for index in range(len(self.text)):
             self.print_phrase(index, with_time)

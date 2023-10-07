@@ -160,7 +160,7 @@ def real_time_transcribe() -> Transcriptions:
         except KeyboardInterrupt:
             break
 
-    transcription.print()
+    transcription.print_all()
     print("Stopping recording...")
 
     return transcription
