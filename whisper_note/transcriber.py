@@ -61,15 +61,18 @@ class Transcriber:
                 self.transcription.rich_print(self.recorder.pending_time_size)
             except KeyboardInterrupt:
                 break
-        print("Stopping recording...")
+        # If the loop is broken, we are done recording.
+        self._on_stop_recording()
 
-        # #TODO: add a on_stop_recording
+    def _on_stop_recording(self):
+        print("Stopping recording...")
         if self.config.store_merged_wav:  # double checking is good
             self.recorder.gen_full_wav()
             for wav in self.recorder.all_wav:
                 wav.close()
                 print(f"Deleting piece {wav.name}")
                 os.remove(wav.name)
+        # TODO: Do the export thing.
 
     def get_transcription(self):
         return self.transcription
