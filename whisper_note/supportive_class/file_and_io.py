@@ -1,10 +1,21 @@
-from io import BufferedReader, BufferedWriter
+from io import BufferedWriter
 import os
+from typing import Protocol, Sequence
+
 
 WAV_HEADER_SIZE = 44  # suppose it's always 44 bytes
 
 
-def merge_wav_files(wav_files: list[BufferedReader], output: BufferedWriter):
+class SupportSeekAndRead(Protocol):
+    def seek(self, offset: int, whence: int = 0) -> int:
+        ...
+
+    def read(self, n: int = -1) -> bytes:
+        ...
+
+
+# #TEST_MISSING
+def merge_wav_files(wav_files: Sequence[SupportSeekAndRead], output: BufferedWriter):
     assert len(wav_files) > 0, "No wav files to merge"
     assert output.writable(), f"{output.name} is not writable"
     assert os.path.exists(output.name), f"{output.name} not found"
@@ -27,4 +38,3 @@ def merge_wav_files(wav_files: list[BufferedReader], output: BufferedWriter):
         wav.seek(0)
         wav.seek(WAV_HEADER_SIZE)
         output.write(wav.read())
-        wav.close()

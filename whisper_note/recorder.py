@@ -8,6 +8,8 @@ from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
 import speech_recognition as sr
 from result import Err, Ok, Result
 
+from whisper_note.supportive_class.file_and_io import merge_wav_files
+
 from .supportive_class import FrozenConfig, WavTimeSizeQueue
 
 
@@ -23,7 +25,7 @@ class ChunkedRecorder:
     temp_wav: _TemporaryFileWrapper
     sample_rate_width: tuple[int, int]
     config: FrozenConfig
-    full_wav: BufferedWriter | None
+    all_wav: list[_TemporaryFileWrapper]
 
     def __init__(self, data_queue: WavTimeSizeQueue, config: FrozenConfig):
         self.config = config
@@ -31,12 +33,7 @@ class ChunkedRecorder:
         self.pending_time_size = deque()
         self.source, _ = self._initialize_recorder_source()
         self.sample_rate_width = (self.source.SAMPLE_RATE, self.source.SAMPLE_WIDTH)
-
-        if config.store_merged_wav:
-            with open(config.store_merged_wav, "wb") as full_wav:
-                self.full_wav = full_wav
-        else:
-            self.full_wav = None
+        self.all_wav = []
 
     def get_next_part(self) -> tuple[_TemporaryFileWrapper | None, datetime, int]:
         if self.data_queue.empty():
@@ -45,6 +42,13 @@ class ChunkedRecorder:
         temp_wav, time, size = self.data_queue.get()  # best way for Queue.
         self.pending_time_size.popleft()
         return (temp_wav, time, size)
+
+    def gen_full_wav(self) -> None:
+        """merge all wav files in self.all_wav to a single wav file"""
+        if not self.config.store_merged_wav:  # double checking is good
+            return
+        with open(self.config.store_merged_wav, "ab") as merged_wav:
+            merge_wav_files(self.all_wav, merged_wav)
 
     def _load_microphone_source(self) -> Result[sr.Microphone, str]:
         if "linux" not in platform:
@@ -78,15 +82,18 @@ class ChunkedRecorder:
         with source:
             recorder.adjust_for_ambient_noise(source)
 
+        # TODO: extract to as a method
         def record_callback(_, audio: sr.AudioData) -> None:
             """
             Threaded callback function to receive audio data when recordings finish.
             audio: An AudioData containing the recorded bytes.
             """
             # Convert raw data to wav file before pushing it to the queue.
-            temp_wav = NamedTemporaryFile(delete=(self.full_wav is None), suffix=".wav")
+            temp_wav = NamedTemporaryFile(delete=self.config.store_merged_wav == "")
             temp_wav.write(audio.get_wav_data())  # temp .wav file for whisper to read
             time, size = datetime.now(), os.path.getsize(temp_wav.name)
+            if self.config.store_merged_wav:
+                self.all_wav.append(temp_wav)
             self.data_queue.put((temp_wav, time, size))
             self.pending_time_size.append((time, size))
             # push bytes to thread-safe queue
