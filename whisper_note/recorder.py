@@ -23,12 +23,12 @@ class ChunkedRecorder:
     def __init__(self, data_queue: TimedSampleQueue, config: FrozenConfig):
         self.config = config
         self.data_queue = data_queue
-        self.source, _ = self.initialize_source_recorder_with_queue()
+        self.source, _ = self._initialize_source_recorder_with_queue()
         self.sample_rate_width = (self.source.SAMPLE_RATE, self.source.SAMPLE_WIDTH)
 
     def get_next_part(self) -> tuple[datetime, _TemporaryFileWrapper | None]:
         if self.data_queue.empty():
-            return (datetime.utcnow(), None)
+            return (datetime.now(), None)
         # data_queue is not empty, handle the data.
         time, audio_buffer = self.data_queue.get()  # best way for Queue.
         # Convert raw data to wav file to return
@@ -37,7 +37,7 @@ class ChunkedRecorder:
         temp_wav.write(audio_data.get_wav_data())  # Write wav to the temp file
         return (time, temp_wav)
 
-    def load_microphone_source(self) -> Result[sr.Microphone, str]:
+    def _load_microphone_source(self) -> Result[sr.Microphone, str]:
         if "linux" not in platform:
             source = sr.Microphone(sample_rate=16000)
             return Ok(source)
@@ -58,7 +58,7 @@ class ChunkedRecorder:
                 return Err("Default microphone with name {mic_name} not found.")
         return Ok(source)
 
-    def initialize_source_recorder_with_queue(
+    def _initialize_source_recorder_with_queue(
         self,
     ) -> tuple[sr.Microphone, sr.Recognizer]:
         # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.
@@ -66,7 +66,7 @@ class ChunkedRecorder:
         recorder.energy_threshold = self.config.energy_threshold
         # Definitely do this, dynamic energy compensation lowers the energy threshold dramatically to a point where the SpeechRecognizer never stops recording.
         recorder.dynamic_energy_threshold = False
-        source = self.load_microphone_source().or_else(lambda err: exit(err)).unwrap()
+        source = self._load_microphone_source().or_else(lambda err: exit(err)).unwrap()
 
         with source:
             recorder.adjust_for_ambient_noise(source)
@@ -78,7 +78,7 @@ class ChunkedRecorder:
             """
             data = audio.get_raw_data()
             self.data_queue.put(
-                (datetime.utcnow(), data)
+                (datetime.now(), data)
             )  # push bytes to thread-safe queue
             print(f"Received {len(data)} bytes of audio data.")
 
