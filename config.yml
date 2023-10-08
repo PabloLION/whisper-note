@@ -1,15 +1,22 @@
 ### Transcription ###
 model: "small" # default: "small.en"  model name
-phrase_max_second: 3 # default: 3; max seconds before forcefully break a phrase
+phrase_max_second: 5 # default: 5; max seconds before forcefully break a phrase
 
-### Translator ###
+### Translation ###
 # If translator is "NONE", source_lang and target_lang will be ignored.
-translator: "DEEPL" # "NONE"(no translation) or "DEEPL".
 # translator planned to support: "GOOGLE", "MICROSOFT", "AMAZON", "YANDEX", "PAPAGO", "KAKAO"
-
+translator: "DEEPL" # "NONE"(no translation) or "DEEPL".
 # See language codes in translator.py. Translate English to Chinese by default.
-source_lang: "Chinese_Simplified" # default: "English"
-target_lang: "American_English" # default: "Chinese_Simplified"
+source_lang: "English" # default: "English"
+target_lang: "Chinese_Simplified" # default: "Chinese_Simplified"
+
+### Export ###
+store_merged_wav: True # default: False; If true, will generate a merged wav without break between phrases.
+
+### Summarize ###
+summarizer: "NONE" # "NONE"(no summarization) or "GPT3"
+another_transcription: False # default: False; generate another transcription from merged wav file, may be slow.
+# if false, the summary will be generated with the original transcription.
 
 ### General ###
 linux_microphone: "list" # ignore if not Linux users; "list" shows all microphones.

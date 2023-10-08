@@ -33,6 +33,9 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
         parsed_cfg["linux_microphone"] = cfg.get("linux_microphone", None)
         parsed_cfg["energy_threshold"] = cfg.get("energy_threshold", 1000)
         parsed_cfg["phrase_max_second"] = cfg.get("phrase_max_second", 3)
+        parsed_cfg["store_merged_wav"] = cfg.get("store_merged_wav", False)
+        parsed_cfg["summarizer"] = cfg.get("summarizer", "NONE")
+        parsed_cfg["another_transcription"] = cfg.get("another_transcription", False)
 
     # parse translator api key
     match parsed_cfg["translator"]:
@@ -42,6 +45,20 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
             parsed_cfg["translator_env_key"] = "DEEPL_API_KEY"
         case not_matched:
             raise ConfigLoadingError(f"Unknown translator: translator={not_matched}")
+
+    # parse summarizer
+    if parsed_cfg["summarizer"] == "NONE":
+        if parsed_cfg["another_transcription"]:
+            raise ConfigLoadingError(
+                "another_transcription is only available when summarizer is not NONE"
+            )
+    elif parsed_cfg["summarizer"] == "GPT3":
+        parsed_cfg["summarizer_env_key"] = "GPT3_API_KEY"
+    else:
+        raise ConfigLoadingError(
+            f"Unknown summarizer: summarizer={parsed_cfg['summarizer']}"
+        )
+
     CONFIG = FrozenConfig(**parsed_cfg)
     parsed_cfg.clear()
     return CONFIG

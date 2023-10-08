@@ -16,12 +16,15 @@ class FrozenConfig(NamedTuple):
     linux_microphone: str | None
     energy_threshold: int
     phrase_max_second: int
+    summarizer: str
+    store_merged_wav: bool
+    another_transcription: bool
 
     def mutated_copy(self: "FrozenConfig", **kwargs: ConfigValue) -> "FrozenConfig":
         return FrozenConfig(**{**self._asdict(), **kwargs})
 
 
-DEFAULT_CONFIG = FrozenConfig(
+EXAMPLE_CONFIG = FrozenConfig(
     dot_env_path="",
     translator="DEEPL",
     translator_env_key="DEEPL_API_KEY",
@@ -31,4 +34,7 @@ DEFAULT_CONFIG = FrozenConfig(
     linux_microphone=None,
     energy_threshold=1000,
     phrase_max_second=3,
+    summarizer="NONE",
+    store_merged_wav=False,
+    another_transcription=False,
 )
