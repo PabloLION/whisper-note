@@ -15,7 +15,7 @@ from whisper_note.supportive_class import (
 
 
 def build_default_args() -> argparse.Namespace:
-    # #TODO: load args from cli and parse it to FrozenConfig
+    # #TODO:LTR load args from cli and parse it to FrozenConfig
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model",
@@ -85,7 +85,7 @@ class RichTable:
             "Text & Translation", justify="left", width=text_width, overflow="fold"
         )
         table.add_column("Size", justify="center", width=size_width)
-        # #TODO:use realistic lang headers from config
+        # #TODO: use realistic lang headers from config
         table.add_column("EN", justify="center", width=checker_width)
         table.add_column("CN", justify="center", width=checker_width)
         return table

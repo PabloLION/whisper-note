@@ -7,7 +7,7 @@ from whisper_note.supportive_class import FrozenConfig
 
 class TranslatorProtocol(Protocol):
     # not saving API key because it's safer and we don't need it later.
-    translator: Union[deepl.Translator, Any]  # TODO: Add other translators
+    translator: Union[deepl.Translator, Any]  # TODO:LTR Add other translators
     config: FrozenConfig
 
     @final
