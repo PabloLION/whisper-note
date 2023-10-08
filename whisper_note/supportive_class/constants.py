@@ -10,7 +10,7 @@ from tempfile import _TemporaryFileWrapper
 WavTimeSizeQueue = Queue[tuple[_TemporaryFileWrapper, datetime, int]]
 
 logging.basicConfig(
-    level="NOTSET",
+    level="INFO",
     format="%(message)s",
     datefmt="[%X]",
     handlers=[RichHandler(rich_tracebacks=True)],

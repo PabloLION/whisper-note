@@ -74,7 +74,7 @@ class Transcriber:
                 wav.close()
                 LOG.debug(f"Deleting piece {wav.name}")
                 os.remove(wav.name)
-            LOG.info(f"Transcription generated: {self.config.merged_transcription}")
+            LOG.info(f"Merged wav generated: {self.config.merged_transcription}")
 
         if self.config.merged_transcription:
             LOG.info("generating transcription...")
@@ -84,7 +84,8 @@ class Transcriber:
             else:
                 with open(self.config.merged_transcription, "w") as f:
                     f.write(txt)
-            LOG.info(f"Transcription generated: {self.config.merged_transcription}")
+            LOG.info(f"Merged text generated: {self.config.merged_transcription}")
+
         # TODO: export existing transcription if not this
 
     def get_transcription(self):
