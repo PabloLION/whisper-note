@@ -8,18 +8,17 @@ from whisper_note.recorder import ChunkedRecorder
 from whisper_note.supportive_class import (
     FrozenConfig,
     Language,
-    TimedSampleQueue,
+    WavTimeSizeQueue,
     get_translator,
 )
 from whisper_note.transcription import Transcriptions
 
 
 # #TODO: double assert non-empty text
-# #TODO: change Queue to wav file to use more threads and show time
 class Transcriber:
     config: FrozenConfig
     whisper_model: whisper.Whisper
-    data_q: TimedSampleQueue
+    data_q: WavTimeSizeQueue
     recorder: ChunkedRecorder
     transcription: Transcriptions
 
@@ -46,7 +45,7 @@ class Transcriber:
         print("Recording started...")  # Cue the user to go.
         while True:
             try:  # to not block the keyboard interrupt
-                time, temp_wav = self.recorder.get_next_part()
+                temp_wav, time, size = self.recorder.get_next_part()
                 if temp_wav is None:
                     sleep(0.3)  # uninterruptedly recording in another thread
                     continue

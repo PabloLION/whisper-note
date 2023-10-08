@@ -1,11 +1,12 @@
 from datetime import datetime
+import os
 from sys import platform
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
 
 import speech_recognition as sr
 from result import Err, Ok, Result
 
-from .supportive_class import FrozenConfig, TimedSampleQueue
+from .supportive_class import FrozenConfig, WavTimeSizeQueue
 
 
 class ChunkedRecorder:
@@ -14,28 +15,24 @@ class ChunkedRecorder:
     chunks as wav files.
     """
 
-    data_queue: TimedSampleQueue
+    data_queue: WavTimeSizeQueue
     source: sr.Microphone
     temp_wav: _TemporaryFileWrapper
     sample_rate_width: tuple[int, int]
     config: FrozenConfig
 
-    def __init__(self, data_queue: TimedSampleQueue, config: FrozenConfig):
+    def __init__(self, data_queue: WavTimeSizeQueue, config: FrozenConfig):
         self.config = config
         self.data_queue = data_queue
         self.source, _ = self._initialize_source_recorder_with_queue()
         self.sample_rate_width = (self.source.SAMPLE_RATE, self.source.SAMPLE_WIDTH)
 
-    def get_next_part(self) -> tuple[datetime, _TemporaryFileWrapper | None]:
+    def get_next_part(self) -> tuple[_TemporaryFileWrapper | None, datetime, int]:
         if self.data_queue.empty():
-            return (datetime.now(), None)
+            return (None, datetime.now(), 0)  # no data yet, return None.
         # data_queue is not empty, handle the data.
-        time, audio_buffer = self.data_queue.get()  # best way for Queue.
-        # Convert raw data to wav file to return
-        audio_data = sr.AudioData(audio_buffer, *self.sample_rate_width)
-        temp_wav = NamedTemporaryFile()  # temp .wav file for whisper to read
-        temp_wav.write(audio_data.get_wav_data())  # Write wav to the temp file
-        return (time, temp_wav)
+        temp_wav, time, size = self.data_queue.get()  # best way for Queue.
+        return (temp_wav, time, size)
 
     def _load_microphone_source(self) -> Result[sr.Microphone, str]:
         if "linux" not in platform:
@@ -76,11 +73,13 @@ class ChunkedRecorder:
             Threaded callback function to receive audio data when recordings finish.
             audio: An AudioData containing the recorded bytes.
             """
-            data = audio.get_raw_data()
-            self.data_queue.put(
-                (datetime.now(), data)
-            )  # push bytes to thread-safe queue
-            print(f"Received {len(data)} bytes of audio data.")
+            # Convert raw data to wav file before pushing it to the queue.
+            temp_wav = NamedTemporaryFile()  # temp .wav file for whisper to read
+            temp_wav.write(audio.get_wav_data())  # Write wav to the temp file
+            size = os.path.getsize(temp_wav.name)
+            self.data_queue.put((temp_wav, datetime.now(), size))
+            # push bytes to thread-safe queue
+            print(f"Received {size} bytes of wav data.")
 
         # Create a background thread that will pass us raw audio bytes.
         # We could do this manually but SpeechRecognizer provides a nice helper.
