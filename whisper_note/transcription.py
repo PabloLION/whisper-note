@@ -5,7 +5,11 @@ from typing import Iterator
 from whisper_note.cli import RichTable
 
 
-from whisper_note.supportive_class import TranslatorProtocol, CLEAR_COMMAND
+from whisper_note.supportive_class import (
+    TranslatorProtocol,
+    CLEAR_COMMAND,
+    format_local_time,
+)
 
 rich_table = RichTable()
 
@@ -45,8 +49,7 @@ class Transcriptions:
         if text.strip() == "":
             return
         self.timestamp.append(timestamp)
-        # FIX: wrong time format UTC+0
-        self.time_str.append(timestamp.strftime("%H:%M:%S:%f")[:-3])  # milliseconds
+        self.time_str.append(format_local_time(timestamp))
         self.text.append(text)
         self.translated_text.append("")
         self.wav_sizes.append(wav_size)

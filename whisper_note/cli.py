@@ -7,7 +7,11 @@ from typing import Iterator
 from rich.console import Console
 from rich.table import Table
 
-from whisper_note.supportive_class import CLEAR_COMMAND, convert_bytes
+from whisper_note.supportive_class import (
+    CLEAR_COMMAND,
+    convert_bytes,
+    format_local_time,
+)
 
 
 def build_default_args() -> argparse.Namespace:
@@ -101,9 +105,7 @@ class RichTable:
             table.add_row(time, text, convert_bytes(sz), check(en), check(cn))
         for time, size in n_pending_transcribe:
             # TODO: No border for these rows
-            table.add_row(
-                time.strftime("%H:%M:%S:%f")[:-3], "", convert_bytes(size), "_", "_"
-            )
+            table.add_row(format_local_time(time), "", convert_bytes(size), "_", "_")
         self.console.print(table)
         print("", end="", flush=True)  # scroll to bottom
         if html_path:
