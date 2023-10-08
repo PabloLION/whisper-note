@@ -14,6 +14,7 @@ from whisper_note.supportive_class import (
 from whisper_note.transcription import Transcriptions
 
 
+# #TODO: double assert non-empty text
 class Transcriber:
     config: FrozenConfig
     whisper_model: whisper.Whisper
@@ -55,7 +56,7 @@ class Transcriber:
                 text = cast(str, transcribed["text"]).strip()
                 self.transcription.add_phrase(time, text)
 
-                self.transcription.print_all(clean=True)
+                self.transcription.rich_print(self.data_q.qsize())
             except KeyboardInterrupt:
                 break
         print("Stopping recording...")
