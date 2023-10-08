@@ -1,3 +1,4 @@
+from collections import deque
 from datetime import datetime
 import os
 from sys import platform
@@ -15,7 +16,8 @@ class ChunkedRecorder:
     chunks as wav files.
     """
 
-    data_queue: WavTimeSizeQueue
+    data_queue: WavTimeSizeQueue  # coupled to pending_time_size, should combine
+    pending_time_size: deque[tuple[datetime, int]]
     source: sr.Microphone
     temp_wav: _TemporaryFileWrapper
     sample_rate_width: tuple[int, int]
@@ -24,7 +26,8 @@ class ChunkedRecorder:
     def __init__(self, data_queue: WavTimeSizeQueue, config: FrozenConfig):
         self.config = config
         self.data_queue = data_queue
-        self.source, _ = self._initialize_source_recorder_with_queue()
+        self.pending_time_size = deque()
+        self.source, _ = self._initialize_recorder_source()
         self.sample_rate_width = (self.source.SAMPLE_RATE, self.source.SAMPLE_WIDTH)
 
     def get_next_part(self) -> tuple[_TemporaryFileWrapper | None, datetime, int]:
@@ -32,6 +35,7 @@ class ChunkedRecorder:
             return (None, datetime.now(), 0)  # no data yet, return None.
         # data_queue is not empty, handle the data.
         temp_wav, time, size = self.data_queue.get()  # best way for Queue.
+        self.pending_time_size.popleft()
         return (temp_wav, time, size)
 
     def _load_microphone_source(self) -> Result[sr.Microphone, str]:
@@ -55,9 +59,7 @@ class ChunkedRecorder:
                 return Err("Default microphone with name {mic_name} not found.")
         return Ok(source)
 
-    def _initialize_source_recorder_with_queue(
-        self,
-    ) -> tuple[sr.Microphone, sr.Recognizer]:
+    def _initialize_recorder_source(self) -> tuple[sr.Microphone, sr.Recognizer]:
         # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.
         recorder = sr.Recognizer()
         recorder.energy_threshold = self.config.energy_threshold
@@ -76,8 +78,9 @@ class ChunkedRecorder:
             # Convert raw data to wav file before pushing it to the queue.
             temp_wav = NamedTemporaryFile()  # temp .wav file for whisper to read
             temp_wav.write(audio.get_wav_data())  # Write wav to the temp file
-            size = os.path.getsize(temp_wav.name)
-            self.data_queue.put((temp_wav, datetime.now(), size))
+            time, size = datetime.now(), os.path.getsize(temp_wav.name)
+            self.data_queue.put((temp_wav, time, size))
+            self.pending_time_size.append((time, size))
             # push bytes to thread-safe queue
             print(f"Received {size} bytes of wav data.")
 
