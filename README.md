@@ -48,7 +48,9 @@ Most of this should be converted to GitHub Issues when published.
   - summary of the text with ChatGPT
   - input aggregated wav file for better recognition, translation, etc.
   - generate .SRT substitute
+  - use dynamic .now() as a default name for the merged file
 - UI:
+  - Add a debug panel
   - use more "rich" for error, etc.
   - start/end control
   - Maybe add [textual](https://github.com/Textualize/textual) as a front end
