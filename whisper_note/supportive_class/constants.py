@@ -16,16 +16,16 @@ logging.basicConfig(
     datefmt="[%X]",
     handlers=[RichHandler(rich_tracebacks=True)],
 )
-log = logging.getLogger("rich")
+LOG = logging.getLogger("rich")
 
 if __name__ == "__main__":
-    log.debug("This is a debug message")
-    log.info("This is an info message")
-    log.warning("This is a warning message")
-    log.error("This is an error message")
-    log.critical("This is a critical message")
-    log.log(25, "This is a custom at level 25")
+    LOG.debug("This is a debug message")
+    LOG.info("This is an info message")
+    LOG.warning("This is a warning message")
+    LOG.error("This is an error message")
+    LOG.critical("This is a critical message")
+    LOG.log(25, "This is a custom at level 25")
     sleep(1)
-    log.info("This is an info message")
-    log.warning("This is a warning message")
-    log.error("This is an error message")
+    LOG.info("This is an info message")
+    LOG.warning("This is a warning message")
+    LOG.error("This is an error message")

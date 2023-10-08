@@ -9,8 +9,7 @@ import speech_recognition as sr
 from result import Err, Ok, Result
 
 from whisper_note.supportive_class.file_and_io import merge_wav_files
-
-from .supportive_class import FrozenConfig, WavTimeSizeQueue
+from whisper_note.supportive_class import FrozenConfig, WavTimeSizeQueue, LOG
 
 
 class ChunkedRecorder:
@@ -59,9 +58,9 @@ class ChunkedRecorder:
         # only Linux users need this to prevent permanent application hang / crash
         mic_name = self.config.linux_microphone
         if not mic_name or mic_name == "list":
-            print("Showing available microphone devices: ")
+            LOG.info("Showing available microphone devices: ")
             for index, name in enumerate(sr.Microphone.list_microphone_names()):
-                print(f'Found microphone with name "{name}"')
+                LOG.info(f'Found microphone with name "{name}"')
             return Err("No microphone name provided, aborting.")
         else:
             for index, name in enumerate(sr.Microphone.list_microphone_names()):
@@ -86,7 +85,7 @@ class ChunkedRecorder:
         self.data_queue.put((temp_wav, time, size))
         self.pending_time_size.append((time, size))
         # push bytes to thread-safe queue
-        print(f"Received {size} bytes of wav data.")
+        LOG.info(f"Received {size} bytes of wav data.")
 
     def _initialize_recorder_source(self) -> tuple[sr.Microphone, sr.Recognizer]:
         # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.

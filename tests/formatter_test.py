@@ -40,8 +40,6 @@ def test_format_local_time():
     time_different_format = datetime.datetime(2022, 1, 1, 12, 30, 45, 678000)
     assert format_local_time(time_different_format) != "12:30:45.678"
 
-    print("All test cases pass")
-
 
 def test_format_filename():
     assert format_filename(

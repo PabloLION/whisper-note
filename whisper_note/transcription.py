@@ -77,24 +77,6 @@ class Transcriptions:
     def rich_print(self, pending_recordings: deque[tuple[datetime, int]]) -> None:
         rich_table.live_print(self.format_for_rich(), pending_recordings)
 
-    def print_phrase(self, index: int, with_time: bool = False) -> None:
-        """deprecating!"""
-        indent_len = 15 if with_time else 0  # 15==len("HH:MM:SS:fff | ")
-        if with_time:
-            print(self.time_str[index], end=" | ")
-        print(self.text[index])
-        if self.live_translator:
-            print(" " * indent_len + self.translated_text[index])
-
-    def print_all(self, *, with_time: bool = True, clean: bool = False) -> None:
-        """deprecating!
-        Reprint the updated transcription to a cleared terminal."""
-        if clean:
-            os.system(CLEAR_COMMAND)
-        for index in range(len(self.text)):
-            self.print_phrase(index, with_time)
-        print("", end="", flush=True)
-
     # #TODO: add summary with ChatGPT
     def clear(self) -> None:  # never used
         self.timestamp.clear()

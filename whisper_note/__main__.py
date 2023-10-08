@@ -1,3 +1,4 @@
+from whisper_note.supportive_class.constants import LOG
 from whisper_note.transcriber import Transcriber
 from whisper_note.parse_env_cfg import CONFIG
 
@@ -5,7 +6,7 @@ from whisper_note.parse_env_cfg import CONFIG
 def run_core():
     transcriber = Transcriber(CONFIG)
     transcriber.live_transcribe()
-    print("Done!")
+    LOG.info("Finished! Exiting gracefully")
 
 
 def run():

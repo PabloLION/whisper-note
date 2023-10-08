@@ -8,7 +8,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.live import Live
 
-from whisper_note.supportive_class import format_bytes_str, format_local_time
+from whisper_note.supportive_class import format_bytes_str, format_local_time, LOG
 
 
 def scroll_down(lines):
@@ -22,7 +22,7 @@ def scroll_down(lines):
         handle = kernel32.GetStdHandle(-11)  # Standard Output Handle
         kernel32.ScrollConsoleScreenBufferW(handle, 0, None, (lines, lines), None)
     elif "linux" in sys.platform:
-        print(f"cannot scroll down {lines} lines on {sys.platform}")
+        LOG.warning(f"cannot scroll down {lines} lines on {sys.platform}")
     else:
         raise NotImplementedError(f"Unknown sys.platform: {sys.platform}")
 
