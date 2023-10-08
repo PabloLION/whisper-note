@@ -11,5 +11,6 @@ from .protocol_translator import DeepLTranslator, TranslatorProtocol, get_transl
 
 from .constants import WavTimeSizeQueue, LOG
 from .formatter import format_bytes_str, format_local_time, format_filename
+from .file_and_io import parse_path_config, merge_wav_files
 
 # DO NOT SORT IMPORTS! the order is important.

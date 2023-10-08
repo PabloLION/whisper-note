@@ -12,9 +12,9 @@ target_lang: "Chinese_Simplified" # default: "Chinese_Simplified"
 
 ### Export ###
 # All values here are parsed as "PATH" type. See "PATH" type below.
-live_transcription: "[LIVE]" # store the result of live transcription
-store_merged_wav: "[LIVE]" #
-merged_transcription: "[LIVE]" #
+live_transcription: "./" # store the result of live transcription
+store_merged_wav: "./" #
+merged_transcription: "./" #
 
 ### Summarize ###
 summarizer: "NONE" # "NONE"(no summarization) or "GPT3"

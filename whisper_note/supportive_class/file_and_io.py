@@ -1,6 +1,9 @@
+from datetime import datetime
 from io import BufferedWriter
 import os.path
 from typing import Protocol, Sequence
+
+from whisper_note.supportive_class import format_filename, format_local_time
 
 
 WAV_HEADER_SIZE = 44  # suppose it's always 44 bytes
@@ -14,28 +17,30 @@ class SupportSeekAndRead(Protocol):
         ...
 
 
-def parse_my_path_config(path_config: str) -> str:
+def parse_path_config(path_config: str) -> str:
     """
+    Return an absolute path to the new file, without extension.
+
+    Input:
     - "" means nothing will be created.
     - "path/to/folder/" means "YYYY-MM-DD HH-MM-SS-ffffff" will be created there.
     - "path/to/file" means a file named "path/to/file" will be created at there.
     - Both "path/to/folder/" and "path/to/file" can be relative or absolute.
     - To encourage user to be aware if the path is a file or folder,
-    - "path/to/folder" and "path/to/file/" are not allowed.
+        "path/to/folder" and "path/to/file/" are not allowed.
     """
     path_config = path_config.strip()
     if path_config == "":
         return ""
-    elif path_config.endswith("/"):
+    filename_no_ext = format_filename(format_local_time(datetime.now()))
+    if path_config.endswith("/" or "\\"):
         assert os.path.isdir(path_config), f"{path_config} is not a folder"
-        return path_config
+        return os.path.join(path_config, filename_no_ext)
     else:
-        assert (
-            os.path.isfile(path_config)
-            or not os.path.exists(path_config)
-            or os.path.getsize(path_config) == 0
+        assert not os.path.exists(path_config) or (
+            os.path.isfile(path_config) and os.path.getsize(path_config) == 0
         ), f"{path_config} exists and is not empty, cannot write it"
-        return path_config
+        return os.path.abspath(path_config)
 
 
 # #TEST_MISSING

@@ -9,21 +9,10 @@ from whisper_note.supportive_class import (
     InvalidConfigError,
     format_filename,
 )
+from whisper_note.supportive_class.file_and_io import parse_path_config
 
 
 DEFAULT_CONFIG_FOLDER = os.path.abspath(os.path.join(__file__, "..", ".."))
-
-
-def assert_empty_file(path: str, config_name: str) -> None:
-    if not path:
-        return
-
-    if not os.path.exists(path):
-        ...  # The creation is automatic when opened in "ab" mode.
-    elif os.path.isdir(path):  # #TODO:TBD gen a .wav file in this folder?
-        raise InvalidConfigError(f"config {config_name}={path} is a directory")
-    elif os.path.getsize(path) != 0:
-        raise InvalidConfigError(f"config {config_name}={path} is not empty")
 
 
 def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> FrozenConfig:
@@ -62,10 +51,7 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
 
     # check the merged wav file
     wav_path = parsed_cfg["store_merged_wav"]
-    if wav_path == "[LIVE]":
-        filename = format_filename(f"{datetime.now()}.wav")
-        parsed_cfg["store_merged_wav"] = wav_path = filename
-    assert_empty_file(wav_path, "store_merged_wav")
+    parsed_cfg["store_merged_wav"] = parse_path_config(wav_path) + ".wav"
     if wav_path == "" and parsed_cfg["merged_transcription"]:
         raise InvalidConfigError(
             "merged_transcription is only available when store_merged_wav is not empty"
@@ -73,10 +59,7 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
 
     # merged transcription
     txt_path = parsed_cfg["merged_transcription"]
-    if txt_path == "[LIVE]":
-        filename = format_filename(f"{datetime.now()}.txt")
-        parsed_cfg["merged_transcription"] = txt_path = filename
-    assert_empty_file(txt_path, "merged_transcription")
+    parsed_cfg["merged_transcription"] = parse_path_config(txt_path) + ".txt"
     if txt_path == "" and parsed_cfg["summarizer"] != "NONE":
         raise InvalidConfigError(
             "summarizer is only available when merged_transcription is not empty"
