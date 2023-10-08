@@ -15,10 +15,8 @@ def format_bytes_str(byte_size: int) -> str:
         unit_index += 1
 
     # Determine the number of decimal places based on the magnitude of the value
-    if output_size > 100:
+    if output_size > 10:
         decimal_places = 0
-    elif output_size > 10:
-        decimal_places = 1
     elif output_size > 1:
         decimal_places = 2
     else:
