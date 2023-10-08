@@ -5,5 +5,4 @@ from queue import Queue
 from tempfile import _TemporaryFileWrapper
 
 WavTimeSizeQueue = Queue[tuple[_TemporaryFileWrapper, datetime, int]]
-CLEAR_COMMAND = "cls" if os.name == "nt" else "clear"  # #TODO:ref mv
-# TODO: ren
+CLEAR_COMMAND = "cls" if os.name == "nt" else "clear"
