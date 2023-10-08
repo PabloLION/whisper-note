@@ -62,7 +62,7 @@ class RichTable:
         self.console = Console(record=True)
 
     def new_table(self) -> Table:
-        time_width = 11
+        time_width = 14
         checker_width = 4
         size_width = 6
         text_width = self.console.width - time_width - checker_width * 2 - 3 * 6
@@ -112,7 +112,8 @@ class RichTable:
         for time, size in n_pending_transcribe:
             table.add_row(format_local_time(time), "", convert_bytes(size), "_", "_")
         self.console.print(table)
-        print("", end="", flush=True)  # scroll to bottom
         if html_path:
             self.console.save_html(html_path)
+        self.console.print(" ")
+        print("", end="", flush=True)  # scroll to bottom
         return self.console.export_text()  # for testing

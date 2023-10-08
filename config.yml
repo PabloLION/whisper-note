@@ -1,9 +1,5 @@
-### General ###
-linux_microphone: "list" # ignore if not Linux users; "list" shows all microphones.
-microphone_energy_threshold: 1000 # default: 1000; minimum audio energy to record
-
 ### Transcription ###
-model: "large" # default: "small.en"  model name
+model: "small" # default: "small.en"  model name
 phrase_max_second: 3 # default: 3; max seconds before forcefully break a phrase
 
 ### Translator ###
@@ -14,3 +10,7 @@ translator: "DEEPL" # "NONE"(no translation) or "DEEPL".
 # See language codes in translator.py. Translate English to Chinese by default.
 source_lang: "Chinese_Simplified" # default: "English"
 target_lang: "American_English" # default: "Chinese_Simplified"
+
+### General ###
+linux_microphone: "list" # ignore if not Linux users; "list" shows all microphones.
+microphone_energy_threshold: 1000 # default: 1000; minimum audio energy to record
