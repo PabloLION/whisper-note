@@ -1,5 +1,5 @@
 import os
-from typing import Any, Optional, Protocol, Union, final
+from typing import Any, Protocol, Union, final
 import deepl
 
 from whisper_note.supportive_class import FrozenConfig
@@ -53,5 +53,5 @@ class DeepLTranslator(TranslatorProtocol):
         return result.text
 
 
-def get_translator(config: FrozenConfig) -> Optional[TranslatorProtocol]:
+def get_translator(config: FrozenConfig) -> TranslatorProtocol | None:
     return DeepLTranslator(config)

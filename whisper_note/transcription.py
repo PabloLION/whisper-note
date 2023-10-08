@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import Iterator, Optional
+from typing import Iterator
 from whisper_note.cli import RichTable
 
 
@@ -19,14 +19,14 @@ class Transcriptions:
     text: list[str]
     translated_text: list[str]
     real_time_print: bool
-    real_time_translator: Optional[TranslatorProtocol]
+    real_time_translator: TranslatorProtocol | None
     # maybe another full text translator
     clean_on_print: bool
 
     def __init__(
         self,
         real_time_print: bool,
-        real_time_translator: Optional[TranslatorProtocol],
+        real_time_translator: TranslatorProtocol | None = None,
         clean_on_print: bool = True,
     ) -> None:
         self.timestamp = []

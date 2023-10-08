@@ -1,4 +1,4 @@
-from typing import NamedTuple, Optional, final
+from typing import NamedTuple, final
 from .enum_language import Language
 
 # I don't know how to gather the types of values dynamically
@@ -13,7 +13,7 @@ class FrozenConfig(NamedTuple):
     model: str
     source_lang: Language
     target_lang: Language
-    linux_microphone: Optional[str]
+    linux_microphone: str | None
     energy_threshold: int
     phrase_max_second: int
 
