@@ -72,16 +72,14 @@ def build_default_args() -> argparse.Namespace:
 class RichTable:
     console: Console
     live_console: Live
-    live_table: Table
 
     def __init__(self) -> None:
-        self.console = Console(record=True)
+        self.console = Console()
         self.live_console = Live(
             console=self.console, vertical_overflow="visible", auto_refresh=False
         ).__enter__()
-        self.live_table = self.new_table()
 
-    def new_table(self) -> Table:
+    def _new_table_with_col(self) -> Table:
         time_width = 14
         checker_width = 4
         size_width = 6
@@ -110,53 +108,47 @@ class RichTable:
         table.add_column("CN", justify="center", width=checker_width)
         return table
 
+    def _build_live_table(
+        self,
+        table_content: Iterator[tuple[str, str, int, bool, bool]],
+        n_pending_transcribe: deque[tuple[datetime, int]],
+    ) -> Table:
+        # Instead of re-building the whole table, we may use `table.rows.__delitem__()`
+        # BUT, the width of the table will not be updated, so maybe it's not a good idea.
+        table = self._new_table_with_col()
+        for time, text, sz, transcribed, translated in table_content:
+            c = lambda x: "✓" if x else "_"  # to check char
+            table.add_row(
+                time,
+                text,
+                format_bytes_str(sz),
+                c(transcribed),  # do we actually need to pass this?
+                c(translated),
+                end_section=True,
+            )
+        for time, size in n_pending_transcribe:
+            table.add_row(format_local_time(time), "", format_bytes_str(size), "_", "_")
+        return table
+
     def live_print(
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
         n_pending_transcribe: deque[tuple[datetime, int]],
     ):
-        table = self.new_table()
-        for time, text, sz, transcribed, translated in table_content:
-            c = lambda x: "✓" if x else "_"  # to check char
-            table.add_row(
-                time,
-                text,
-                format_bytes_str(sz),
-                c(transcribed),  # do we actually need to pass this?
-                c(translated),
-                end_section=True,
-            )
-        for time, size in n_pending_transcribe:
-            table.add_row(format_local_time(time), "", format_bytes_str(size), "_", "_")
-
+        table = self._build_live_table(table_content, n_pending_transcribe)
         self.live_console.update(table, refresh=True)
 
-    def print_to_save(
+    def save_table(
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
         n_pending_transcribe: deque[tuple[datetime, int]],
         html_path: str | None = None,
     ) -> str:
-        table = self.new_table()
-        for time, text, sz, transcribed, translated in table_content:
-            c = lambda x: "✓" if x else "_"  # to check char
-            table.add_row(
-                time,
-                text,
-                format_bytes_str(sz),
-                c(transcribed),  # do we actually need to pass this?
-                c(translated),
-                end_section=True,
-            )
-        for time, size in n_pending_transcribe:
-            table.add_row(format_local_time(time), "", format_bytes_str(size), "_", "_")
-
+        table = self._build_live_table(table_content, n_pending_transcribe)
         output_buffer = StringIO()
-
-        self.console.print(table)
-
+        str_console = Console(file=output_buffer, record=True)
+        str_console.print(table)
         if html_path:
-            self.console.save_html(html_path)
-        console_str = self.console.export_text()
-        print(datetime.now(), flush=True)  # scroll to bottom
-        return ""  # console_str  # for testing
+            str_console.save_html(html_path)
+        console_str = output_buffer.getvalue()
+        return console_str  # console_str  # for testing
