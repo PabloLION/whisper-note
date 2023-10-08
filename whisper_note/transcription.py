@@ -99,7 +99,6 @@ class Transcriptions:
         return len(self.text)
 
     def __iter__(self) -> Iterator[tuple[str, str, str] | None]:
-        # #TODO: test if two iters will conflict
         i = 0
         while True:
             if i >= len(self):
