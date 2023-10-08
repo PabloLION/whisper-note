@@ -10,7 +10,7 @@ class InvalidConfigError(ValueError):
 ConfigValue = str | Language | int | None
 
 
-@final
+@final  # #TODO: use dataclass
 class FrozenConfig(NamedTuple):
     dot_env_path: str
     translator: str
@@ -22,8 +22,8 @@ class FrozenConfig(NamedTuple):
     energy_threshold: int
     phrase_max_second: int
     summarizer: str
-    store_merged_wav: bool
-    merged_transcription: bool
+    store_merged_wav: str
+    merged_transcription: str
 
     def mutated_copy(self: "FrozenConfig", **kwargs: ConfigValue) -> "FrozenConfig":
         return FrozenConfig(**{**self._asdict(), **kwargs})
@@ -40,6 +40,6 @@ EXAMPLE_CONFIG = FrozenConfig(
     energy_threshold=1000,
     phrase_max_second=3,
     summarizer="NONE",
-    store_merged_wav=False,
-    merged_transcription=False,
+    store_merged_wav="",
+    merged_transcription="",
 )
