@@ -1,9 +1,13 @@
 import os
 from datetime import datetime
-from textwrap import wrap
 from typing import Iterator, Optional
+from whisper_note.cli import RichTable
+
 
 from whisper_note.supportive_class import TranslatorProtocol
+
+rich_table = RichTable()
+CLEAR_COMMAND = "cls" if os.name == "nt" else "clear"  # #TODO: ref mv
 
 
 class Transcriptions:
@@ -19,8 +23,6 @@ class Transcriptions:
     real_time_translator: Optional[TranslatorProtocol]
     # maybe another full text translator
     clean_on_print: bool
-
-    __CLEAR_COMMAND = "cls" if os.name == "nt" else "clear"
 
     def __init__(
         self,
@@ -38,6 +40,8 @@ class Transcriptions:
 
     def add_phrase(self, timestamp: datetime, text: str) -> None:
         self.timestamp.append(timestamp)
+        # FIX: wrong time format UTC+0
+        # TODO: double assert non-empty text
         self.time_str.append(timestamp.strftime("%H:%M:%S:%f")[:-3])  # milliseconds
         self.text.append(text)
         self.translated_text.append("")
@@ -51,20 +55,14 @@ class Transcriptions:
             self.translated_text[index] = translation
         return self.translated_text[index]
 
-    def pretty_format_phrase(self, index: int) -> str:
-        l_indent = " " * 15  # 15==len("HH:MM:SS:fff | ")
-        r_indent = " " * 10  # 10==len("  | ✓ | ✓ ")
-        line_width = -25  # 25==len(l_indent + r_indent)
-        text, translation = self.text[index], self.translated_text[index]
+    def format_for_rich(self) -> Iterator[tuple[str, str, bool, bool]]:
+        yield from (
+            (ts, txt + "\n" + tran, True, bool(tran))
+            for ts, txt, tran in zip(self.time_str, self.text, self.translated_text)
+        )
 
-        wrapped_text = wrap(self.text[index], line_width)
-        wrapped_translation = wrap(self.translated_text[index], line_width)
-
-        s = ""
-        s += " | "
-        if self.real_time_translator:
-            s += "\n" + l_indent + self.real_time_translate(index)
-        return s
+    def rich_print(self, n_pending_transcribe: int) -> None:
+        rich_table.print_to_save(self.format_for_rich(), n_pending_transcribe)
 
     def print_phrase(self, index: int, with_time: bool = False) -> None:
         indent_len = 15 if with_time else 0  # 15==len("HH:MM:SS:fff | ")
@@ -77,7 +75,7 @@ class Transcriptions:
     def print_all(self, *, with_time: bool = True, clean: bool = False) -> None:
         # Reprint the updated transcription to a cleared terminal.
         if clean:
-            os.system(self.__CLEAR_COMMAND)
+            os.system(CLEAR_COMMAND)
         for index in range(len(self.text)):
             self.print_phrase(index, with_time)
         print("", end="", flush=True)
@@ -98,6 +96,7 @@ class Transcriptions:
         return len(self.text)
 
     def __iter__(self) -> Iterator[tuple[str, str, str] | None]:
+        # #TODO: test two iters
         i = 0
         while True:
             if i >= len(self):
