@@ -72,7 +72,6 @@ class RichTable:
             header_style="bold magenta",
             title="Transcripts",
             expand=True,
-            show_lines=True,
             show_edge=False,
         )
         table.add_column(
@@ -100,11 +99,17 @@ class RichTable:
         self.console.clear(home=False)
         os.system(CLEAR_COMMAND)
         table = self.new_table()
-        for time, text, sz, en, cn in table_content:
-            check = lambda x: "✓" if x else "_"
-            table.add_row(time, text, convert_bytes(sz), check(en), check(cn))
+        for time, text, sz, transcribed, translated in table_content:
+            c = lambda x: "✓" if x else "_"  # to check char
+            table.add_row(
+                time,
+                text,
+                convert_bytes(sz),
+                c(transcribed),  # do we actually need to pass this?
+                c(translated),
+                end_section=True,
+            )
         for time, size in n_pending_transcribe:
-            # TODO: No border for these rows
             table.add_row(format_local_time(time), "", convert_bytes(size), "_", "_")
         self.console.print(table)
         print("", end="", flush=True)  # scroll to bottom
