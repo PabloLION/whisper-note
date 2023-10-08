@@ -9,7 +9,7 @@ from rich.table import Table
 
 from whisper_note.supportive_class import (
     CLEAR_COMMAND,
-    convert_bytes,
+    format_bytes_str,
     format_local_time,
 )
 
@@ -104,13 +104,13 @@ class RichTable:
             table.add_row(
                 time,
                 text,
-                convert_bytes(sz),
+                format_bytes_str(sz),
                 c(transcribed),  # do we actually need to pass this?
                 c(translated),
                 end_section=True,
             )
         for time, size in n_pending_transcribe:
-            table.add_row(format_local_time(time), "", convert_bytes(size), "_", "_")
+            table.add_row(format_local_time(time), "", format_bytes_str(size), "_", "_")
         self.console.print(table)
         if html_path:
             self.console.save_html(html_path)

@@ -5,5 +5,4 @@ from .protocol_translator import DeepLTranslator, TranslatorProtocol, get_transl
 
 # DO NOT SORT IMPORTS! the order is important.
 
-from .format_size import convert_bytes
-from .format_time import format_local_time
+from .formatter import format_bytes_str, format_local_time
