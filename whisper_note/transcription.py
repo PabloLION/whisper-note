@@ -42,12 +42,13 @@ class Transcriptions:
         self.timestamp.append(timestamp)
         # FIX: wrong time format UTC+0
         # TODO: double assert non-empty text
-        # TODO: change translation strategy to here.
         self.time_str.append(timestamp.strftime("%H:%M:%S:%f")[:-3])  # milliseconds
         self.text.append(text)
         self.translated_text.append("")
+        self.real_time_translate(len(self.text) - 1)
 
     def real_time_translate(self, index: int) -> str:
+        # this should be exclusive, but we are only calling it once.
         assert 0 <= index < len(self.text), f"Transcriptions index {index} out of range"
         if not self.real_time_translator:
             return ""
@@ -72,7 +73,7 @@ class Transcriptions:
             print(self.time_str[index], end=" | ")
         print(self.text[index])
         if self.real_time_translator:
-            print(" " * indent_len + self.real_time_translate(index))
+            print(" " * indent_len + self.translated_text[index])
 
     def print_all(self, *, with_time: bool = True, clean: bool = False) -> None:
         # Reprint the updated transcription to a cleared terminal.
@@ -103,5 +104,5 @@ class Transcriptions:
         while True:
             if i >= len(self):
                 yield None
-            yield self.time_str[i], self.text[i], self.real_time_translate(i)
+            yield self.time_str[i], self.text[i], self.translated_text[i]
             i += 1
