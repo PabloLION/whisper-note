@@ -1,6 +1,7 @@
+import os
 from collections import deque
 from datetime import datetime
-import os
+from io import BufferedWriter
 from sys import platform
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
 
@@ -22,6 +23,7 @@ class ChunkedRecorder:
     temp_wav: _TemporaryFileWrapper
     sample_rate_width: tuple[int, int]
     config: FrozenConfig
+    full_wav: BufferedWriter | None
 
     def __init__(self, data_queue: WavTimeSizeQueue, config: FrozenConfig):
         self.config = config
@@ -29,6 +31,12 @@ class ChunkedRecorder:
         self.pending_time_size = deque()
         self.source, _ = self._initialize_recorder_source()
         self.sample_rate_width = (self.source.SAMPLE_RATE, self.source.SAMPLE_WIDTH)
+
+        if config.store_merged_wav:
+            with open(config.store_merged_wav, "wb") as full_wav:
+                self.full_wav = full_wav
+        else:
+            self.full_wav = None
 
     def get_next_part(self) -> tuple[_TemporaryFileWrapper | None, datetime, int]:
         if self.data_queue.empty():
@@ -76,8 +84,8 @@ class ChunkedRecorder:
             audio: An AudioData containing the recorded bytes.
             """
             # Convert raw data to wav file before pushing it to the queue.
-            temp_wav = NamedTemporaryFile()  # temp .wav file for whisper to read
-            temp_wav.write(audio.get_wav_data())  # Write wav to the temp file
+            temp_wav = NamedTemporaryFile(delete=(self.full_wav is None), suffix=".wav")
+            temp_wav.write(audio.get_wav_data())  # temp .wav file for whisper to read
             time, size = datetime.now(), os.path.getsize(temp_wav.name)
             self.data_queue.put((temp_wav, time, size))
             self.pending_time_size.append((time, size))

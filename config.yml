@@ -11,7 +11,7 @@ source_lang: "English" # default: "English"
 target_lang: "Chinese_Simplified" # default: "Chinese_Simplified"
 
 ### Export ###
-store_merged_wav: True # default: False; If true, will generate a merged wav without break between phrases.
+store_merged_wav: "./231008.wav" # default: ""; Or a path to store merged wav file.
 
 ### Summarize ###
 summarizer: "NONE" # "NONE"(no summarization) or "GPT3"
