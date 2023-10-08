@@ -7,7 +7,7 @@ from typing import Iterator
 from rich.console import Console
 from rich.table import Table
 
-from whisper_note.supportive_class import CLEAR_COMMAND
+from whisper_note.supportive_class import CLEAR_COMMAND, convert_bytes
 
 
 def build_default_args() -> argparse.Namespace:
@@ -60,7 +60,8 @@ class RichTable:
     def new_table(self) -> Table:
         time_width = 11
         checker_width = 4
-        text_width = self.console.width - time_width - checker_width * 2 - 3 * 5
+        size_width = 6
+        text_width = self.console.width - time_width - checker_width * 2 - 3 * 6
 
         table = Table(
             show_header=True,
@@ -80,6 +81,7 @@ class RichTable:
         table.add_column(
             "Text & Translation", justify="left", width=text_width, overflow="fold"
         )
+        table.add_column("Size", justify="center", width=size_width)
         # #TODO:use realistic lang headers from config
         table.add_column("EN", justify="center", width=checker_width)
         table.add_column("CN", justify="center", width=checker_width)
@@ -87,18 +89,21 @@ class RichTable:
 
     def print_to_save(
         self,
-        table_content: Iterator[tuple[str, str, bool, bool]],
+        table_content: Iterator[tuple[str, str, int, bool, bool]],
         n_pending_transcribe: deque[tuple[datetime, int]],
         html_path: str | None = None,
     ) -> str:
         self.console.clear(home=False)
         os.system(CLEAR_COMMAND)
         table = self.new_table()
-        for time, text, en, cn in table_content:
-            table.add_row(time, text, "✓" if en else "_", "✓" if cn else "_")
+        for time, text, sz, en, cn in table_content:
+            check = lambda x: "✓" if x else "_"
+            table.add_row(time, text, convert_bytes(sz), check(en), check(cn))
         for time, size in n_pending_transcribe:
             # TODO: No border for these rows
-            table.add_row(time.strftime("%H:%M:%S:%f")[:-3], "", "_", "_")
+            table.add_row(
+                time.strftime("%H:%M:%S:%f")[:-3], "", convert_bytes(size), "_", "_"
+            )
         self.console.print(table)
         print("", end="", flush=True)  # scroll to bottom
         if html_path:

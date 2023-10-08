@@ -19,7 +19,8 @@ class Transcriptions:
     time_str: list[str]
     text: list[str]
     translated_text: list[str]
-    # these four properties above are strongly coupled, should combine them.
+    wav_sizes: list[int]
+    # these five properties above are strongly coupled, should combine them.
     real_time_print: bool
     real_time_translator: TranslatorProtocol | None
     # maybe another full text translator
@@ -34,12 +35,13 @@ class Transcriptions:
         self.timestamp = []
         self.text = []
         self.time_str = []
+        self.wav_sizes = []
         self.translated_text = []
         self.real_time_print = real_time_print
         self.real_time_translator = real_time_translator
         self.clean_on_print = clean_on_print
 
-    def add_phrase(self, timestamp: datetime, text: str) -> None:
+    def add_phrase(self, timestamp: datetime, text: str, wav_size: int) -> None:
         if text.strip() == "":
             return
         self.timestamp.append(timestamp)
@@ -47,6 +49,7 @@ class Transcriptions:
         self.time_str.append(timestamp.strftime("%H:%M:%S:%f")[:-3])  # milliseconds
         self.text.append(text)
         self.translated_text.append("")
+        self.wav_sizes.append(wav_size)
         self.real_time_translate(len(self.text) - 1)
 
     def real_time_translate(self, index: int) -> str:
@@ -59,19 +62,20 @@ class Transcriptions:
             self.translated_text[index] = translation
         return self.translated_text[index]
 
-    def format_for_rich(self) -> Iterator[tuple[str, str, bool, bool]]:
+    def format_for_rich(self) -> Iterator[tuple[str, str, int, bool, bool]]:
         yield from (
-            (ts, txt + "\n" + tran, True, bool(tran))
-            for ts, txt, tran in zip(self.time_str, self.text, self.translated_text)
+            (ts, txt + "\n" + tran, sz, True, bool(tran))
+            for ts, txt, sz, tran, in zip(
+                self.time_str, self.text, self.wav_sizes, self.translated_text
+            )
         )
 
-    # #TODO: show records' size
-    # #TODO: show file size
     # #TODO: add a no_truncate option
     def rich_print(self, pending_recordings: deque[tuple[datetime, int]]) -> None:
         rich_table.print_to_save(self.format_for_rich(), pending_recordings)
 
     def print_phrase(self, index: int, with_time: bool = False) -> None:
+        """deprecating!"""
         indent_len = 15 if with_time else 0  # 15==len("HH:MM:SS:fff | ")
         if with_time:
             print(self.time_str[index], end=" | ")
@@ -80,7 +84,8 @@ class Transcriptions:
             print(" " * indent_len + self.translated_text[index])
 
     def print_all(self, *, with_time: bool = True, clean: bool = False) -> None:
-        # Reprint the updated transcription to a cleared terminal.
+        """deprecating!
+        Reprint the updated transcription to a cleared terminal."""
         if clean:
             os.system(CLEAR_COMMAND)
         for index in range(len(self.text)):

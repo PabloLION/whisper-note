@@ -44,7 +44,7 @@ class Transcriber:
         print("Recording started...")  # Cue the user to go.
         while True:
             try:  # to not block the keyboard interrupt
-                temp_wav, time, _size = self.recorder.get_next_part()
+                temp_wav, time, size = self.recorder.get_next_part()
                 if temp_wav is None:
                     sleep(0.3)  # uninterruptedly recording in another thread
                     continue
@@ -55,7 +55,7 @@ class Transcriber:
                 text = cast(str, transcribed["text"]).strip()
                 if text == "":
                     continue
-                self.transcription.add_phrase(time, text)
+                self.transcription.add_phrase(time, text, size)
                 self.transcription.rich_print(self.recorder.pending_time_size)
             except KeyboardInterrupt:
                 break
