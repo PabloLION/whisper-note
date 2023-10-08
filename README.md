@@ -49,6 +49,7 @@ Most of this should be converted to GitHub Issues when published.
   - input aggregated wav file for better recognition, translation, etc.
   - generate .SRT substitute
 - UI:
+  - use more "rich" for error, etc.
   - start/end control
   - Maybe add [textual](https://github.com/Textualize/textual) as a front end
   - Add a "Recording..." indicator every 5 seconds the input is idle.

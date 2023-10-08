@@ -1,8 +1,9 @@
 import argparse
 from collections import deque
 from datetime import datetime
+from io import StringIO
 import os
-from sys import platform
+import sys
 from typing import Iterator
 from rich.console import Console
 from rich.table import Table
@@ -12,6 +13,22 @@ from whisper_note.supportive_class import (
     format_bytes_str,
     format_local_time,
 )
+
+
+def scroll_down(lines):
+    if "darwin" in sys.platform:
+        # sys.stdout.write(f"\033[{lines}T")  # Scroll down by 'lines' lines
+        sys.stdout.flush()
+    elif "win" in sys.platform:
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32  # type: ignore , from ChatGPT
+        handle = kernel32.GetStdHandle(-11)  # Standard Output Handle
+        kernel32.ScrollConsoleScreenBufferW(handle, 0, None, (lines, lines), None)
+    elif "linux" in sys.platform:
+        print(f"cannot scroll down {lines} lines on {sys.platform}")
+    else:
+        raise NotImplementedError(f"Unknown sys.platform: {sys.platform}")
 
 
 def build_default_args() -> argparse.Namespace:
@@ -39,7 +56,7 @@ def build_default_args() -> argparse.Namespace:
         "consider it a new line in the transcription.",
         type=float,
     )
-    if "linux" in platform:
+    if "linux" in sys.platform:
         parser.add_argument(
             "--default_microphone",
             default="pulse",
@@ -96,8 +113,10 @@ class RichTable:
         n_pending_transcribe: deque[tuple[datetime, int]],
         html_path: str | None = None,
     ) -> str:
-        self.console.clear(home=False)
-        os.system(CLEAR_COMMAND)
+        # self.console.clear(home=False) # causes the terminal to sometime scroll up to the top
+        # os.system(CLEAR_COMMAND)
+        # sys.stdout.flush()
+
         table = self.new_table()
         for time, text, sz, transcribed, translated in table_content:
             c = lambda x: "✓" if x else "_"  # to check char
@@ -111,9 +130,17 @@ class RichTable:
             )
         for time, size in n_pending_transcribe:
             table.add_row(format_local_time(time), "", format_bytes_str(size), "_", "_")
+        output_buffer = StringIO()
+        # sys.stdout.flush()
+
         self.console.print(table)
-        if html_path:
-            self.console.save_html(html_path)
-        self.console.print(" ")
-        print("", end="", flush=True)  # scroll to bottom
-        return self.console.export_text()  # for testing
+        # console_io = Console(file=output_buffer)
+        # console_io.print(table)
+        # table_str = output_buffer.getvalue()
+        # print(table_str)
+
+        # if html_path:
+        #     self.console.save_html(html_path)
+        # console_str = self.console.export_text()
+        print(datetime.now(), flush=True)  # scroll to bottom
+        return ""  # console_str  # for testing
