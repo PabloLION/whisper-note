@@ -29,7 +29,7 @@ class Transcriber:
         self.data_q = Queue()  # thread-safe queue, record audio in background
         self.recorder = ChunkedRecorder(self.data_q, config)
         self.transcription = Transcriptions(
-            real_time_print=True, real_time_translator=get_translator(self.config)
+            live_print=True, live_translator=get_translator(self.config)
         )  # output transcription
 
     def _load_whisper_model(self) -> whisper.Whisper:
@@ -42,7 +42,7 @@ class Transcriber:
         print("Whisper model loaded.")
         return whisper_model
 
-    def real_time_transcribe(self) -> None:
+    def live_transcribe(self) -> None:
         print("Recording started...")  # Cue the user to go.
         while True:
             try:  # to not block the keyboard interrupt

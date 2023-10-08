@@ -25,15 +25,15 @@ class Transcriptions:
     translated_text: list[str]
     wav_sizes: list[int]
     # these five properties above are strongly coupled, should combine them.
-    real_time_print: bool
-    real_time_translator: TranslatorProtocol | None
+    live_print: bool
+    live_translator: TranslatorProtocol | None
     # maybe another full text translator
     clean_on_print: bool
 
     def __init__(
         self,
-        real_time_print: bool,
-        real_time_translator: TranslatorProtocol | None = None,
+        live_print: bool,
+        live_translator: TranslatorProtocol | None = None,
         clean_on_print: bool = True,
     ) -> None:
         self.timestamp = []
@@ -41,8 +41,8 @@ class Transcriptions:
         self.time_str = []
         self.wav_sizes = []
         self.translated_text = []
-        self.real_time_print = real_time_print
-        self.real_time_translator = real_time_translator
+        self.live_print = live_print
+        self.live_translator = live_translator
         self.clean_on_print = clean_on_print
 
     def add_phrase(self, timestamp: datetime, text: str, wav_size: int) -> None:
@@ -53,15 +53,15 @@ class Transcriptions:
         self.text.append(text)
         self.translated_text.append("")
         self.wav_sizes.append(wav_size)
-        self.real_time_translate(len(self.text) - 1)
+        self.live_translate(len(self.text) - 1)
 
-    def real_time_translate(self, index: int) -> str:
+    def live_translate(self, index: int) -> str:
         # this should be exclusive, but we are only calling it once.
         assert 0 <= index < len(self.text), f"Transcriptions index {index} out of range"
-        if not self.real_time_translator:
+        if not self.live_translator:
             return ""
         if self.translated_text[index] == "":
-            translation = self.real_time_translator.translate(self.text[index])
+            translation = self.live_translator.translate(self.text[index])
             self.translated_text[index] = translation
         return self.translated_text[index]
 
@@ -83,7 +83,7 @@ class Transcriptions:
         if with_time:
             print(self.time_str[index], end=" | ")
         print(self.text[index])
-        if self.real_time_translator:
+        if self.live_translator:
             print(" " * indent_len + self.translated_text[index])
 
     def print_all(self, *, with_time: bool = True, clean: bool = False) -> None:

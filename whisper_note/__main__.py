@@ -4,7 +4,7 @@ from whisper_note.parse_env_cfg import CONFIG
 
 def run_core():
     transcriber = Transcriber(CONFIG)
-    transcriber.real_time_transcribe()
+    transcriber.live_transcribe()
     print("Done!")
 
 
