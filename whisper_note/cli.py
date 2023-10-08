@@ -8,11 +8,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.live import Live
 
-from whisper_note.supportive_class import (
-    CLEAR_COMMAND,
-    format_bytes_str,
-    format_local_time,
-)
+from whisper_note.supportive_class import format_bytes_str, format_local_time
 
 
 def scroll_down(lines):
