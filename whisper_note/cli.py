@@ -9,7 +9,7 @@ from whisper_note.supportive_class import CLEAR_COMMAND
 
 
 def build_default_args() -> argparse.Namespace:
-    # #TODO: load args from cli and parse it to typed frozen config file
+    # #TODO: load args from cli and parse it to FrozenConfig
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model",

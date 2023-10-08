@@ -18,6 +18,7 @@ class Transcriptions:
     time_str: list[str]
     text: list[str]
     translated_text: list[str]
+    # these four properties above are strongly coupled, should combine them.
     real_time_print: bool
     real_time_translator: TranslatorProtocol | None
     # maybe another full text translator
@@ -64,6 +65,8 @@ class Transcriptions:
         )
 
     # #TODO: show pending record time
+    # #TODO: show file size
+    # #TODO: add a no_truncate option
     def rich_print(self, n_pending_transcribe: int) -> None:
         rich_table.print_to_save(self.format_for_rich(), n_pending_transcribe)
 
@@ -83,6 +86,7 @@ class Transcriptions:
             self.print_phrase(index, with_time)
         print("", end="", flush=True)
 
+    # #TODO: add summary with ChatGPT
     def clear(self) -> None:  # never used
         self.timestamp.clear()
         self.time_str.clear()
