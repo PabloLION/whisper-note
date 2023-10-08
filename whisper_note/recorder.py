@@ -71,6 +71,22 @@ class ChunkedRecorder:
                 return Err("Default microphone with name {mic_name} not found.")
         return Ok(source)
 
+    def _record_callback(self, _, audio: sr.AudioData) -> None:
+        """
+        Threaded callback function to receive audio data when recordings finish.
+        audio: An AudioData containing the recorded bytes.
+        """
+        # Convert raw data to wav file before pushing it to the queue.
+        temp_wav = NamedTemporaryFile(delete=self.config.store_merged_wav == "")
+        temp_wav.write(audio.get_wav_data())  # temp .wav file for whisper to read
+        time, size = datetime.now(), os.path.getsize(temp_wav.name)
+        if self.config.store_merged_wav:
+            self.all_wav.append(temp_wav)
+        self.data_queue.put((temp_wav, time, size))
+        self.pending_time_size.append((time, size))
+        # push bytes to thread-safe queue
+        print(f"Received {size} bytes of wav data.")
+
     def _initialize_recorder_source(self) -> tuple[sr.Microphone, sr.Recognizer]:
         # We use SpeechRecognizer to record our audio because it has a nice feature where it can detect when speech ends.
         recorder = sr.Recognizer()
@@ -82,28 +98,13 @@ class ChunkedRecorder:
         with source:
             recorder.adjust_for_ambient_noise(source)
 
-        # TODO: extract to as a method
-        def record_callback(_, audio: sr.AudioData) -> None:
-            """
-            Threaded callback function to receive audio data when recordings finish.
-            audio: An AudioData containing the recorded bytes.
-            """
-            # Convert raw data to wav file before pushing it to the queue.
-            temp_wav = NamedTemporaryFile(delete=self.config.store_merged_wav == "")
-            temp_wav.write(audio.get_wav_data())  # temp .wav file for whisper to read
-            time, size = datetime.now(), os.path.getsize(temp_wav.name)
-            if self.config.store_merged_wav:
-                self.all_wav.append(temp_wav)
-            self.data_queue.put((temp_wav, time, size))
-            self.pending_time_size.append((time, size))
-            # push bytes to thread-safe queue
-            print(f"Received {size} bytes of wav data.")
-
         # Create a background thread that will pass us raw audio bytes.
         # We could do this manually but SpeechRecognizer provides a nice helper.
         # here the recording is splitted to chunks of length <= phrase_max_second
         # or splitted by silence. It's not very few bytes.
         recorder.listen_in_background(
-            source, record_callback, phrase_time_limit=self.config.phrase_max_second
+            source,
+            self._record_callback,
+            phrase_time_limit=self.config.phrase_max_second,
         )
         return source, recorder
