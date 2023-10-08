@@ -11,8 +11,8 @@ source_lang: "English" # default: "English"
 target_lang: "Chinese_Simplified" # default: "Chinese_Simplified"
 
 ### Export ###
-# All values here are parsed as "PATH" type. See "PATH" type below.
-live_transcription: "./" # store the result of live transcription
+# All values here are parsed as "PATH" type. See how to use "PATH" type below.
+live_transcription: "./" # store the history result of live transcription
 store_merged_wav: "./" #
 merged_transcription: "./" #
 

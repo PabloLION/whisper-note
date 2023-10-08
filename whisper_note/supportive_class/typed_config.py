@@ -22,8 +22,10 @@ class FrozenConfig(NamedTuple):
     energy_threshold: int
     phrase_max_second: int
     summarizer: str
+    # #TODO: use a path lib Path for my config Path for readability
     store_merged_wav: str
     merged_transcription: str
+    live_transcription: str
 
     def mutated_copy(self: "FrozenConfig", **kwargs: ConfigValue) -> "FrozenConfig":
         nf = FrozenConfig(**{**self._asdict(), **kwargs})  # type: ignore
@@ -42,8 +44,10 @@ class FrozenConfig(NamedTuple):
             "energy_threshold": int,
             "phrase_max_second": int,
             "summarizer": str,
+            # #TODO: change these three to Path
             "store_merged_wav": str,
             "merged_transcription": str,
+            "live_transcription": str,
         }
         for k, v in self._asdict().items():
             if isinstance(v, expected_type[k]):
@@ -64,4 +68,5 @@ EXAMPLE_CONFIG = FrozenConfig(
     summarizer="NONE",
     store_merged_wav="",
     merged_transcription="",
+    live_transcription="",
 )
