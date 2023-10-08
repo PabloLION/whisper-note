@@ -69,12 +69,21 @@ class Transcriber:
     def _on_stop_recording(self):
         print("Stopping recording...")
         if self.config.store_merged_wav:  # double checking is good
-            self.recorder.gen_full_wav()
+            self.recorder.write_merged_wav()
             for wav in self.recorder.all_wav:
                 wav.close()
                 print(f"Deleting piece {wav.name}")
                 os.remove(wav.name)
-        # TODO: Do the export thing.
+        print("generating transcription...")
+        if self.config.merged_transcription:
+            txt = self._transcribe_wav(self.config.store_merged_wav)
+            if txt == "":
+                print("No transcription generated. Discarding merged transcription.")
+            else:
+                with open(self.config.merged_transcription, "w") as f:
+                    f.write(txt)
+            # TODO: log done.
+        # TODO: export existing transcription if not this
 
     def get_transcription(self):
         return self.transcription

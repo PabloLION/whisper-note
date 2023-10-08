@@ -43,12 +43,13 @@ class ChunkedRecorder:
         self.pending_time_size.popleft()
         return (temp_wav, time, size)
 
-    def gen_full_wav(self) -> None:
+    def write_merged_wav(self) -> str | None:
         """merge all wav files in self.all_wav to a single wav file"""
         if not self.config.store_merged_wav:  # double checking is good
             return
         with open(self.config.store_merged_wav, "ab") as merged_wav:
             merge_wav_files(self.all_wav, merged_wav)
+        return self.config.store_merged_wav
 
     def _load_microphone_source(self) -> Result[sr.Microphone, str]:
         if "linux" not in platform:
