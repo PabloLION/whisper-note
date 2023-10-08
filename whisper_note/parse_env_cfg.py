@@ -36,11 +36,11 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
         parsed_cfg["phrase_max_second"] = cfg.get("phrase_max_second", 3)
         parsed_cfg["store_merged_wav"] = cfg.get("store_merged_wav", False)
         parsed_cfg["merged_transcription"] = cfg.get("merged_transcription", "")
-        parsed_cfg["live_transcription"] = cfg.get("live_transcription", "")
+        parsed_cfg["live_history_html"] = cfg.get("live_history_html", "")
         parsed_cfg["summarizer"] = cfg.get("summarizer", "NONE")
 
-    parsed_cfg["live_transcription"] = (
-        parse_path_config(parsed_cfg["live_transcription"]) + ".html"
+    parsed_cfg["live_history_html"] = (
+        parse_path_config(parsed_cfg["live_history_html"]) + ".html"
     )
 
     # parse translator api key

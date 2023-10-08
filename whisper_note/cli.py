@@ -103,10 +103,10 @@ class RichTable:
         table.add_column("CN", justify="center", width=checker_width)
         return table
 
-    def _build_live_table(  # #TODO: ren: _construct_new_rich_table
+    def _construct_new_table(
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
-        n_pending_transcribe: Sequence[tuple[datetime, int]],
+        pending_time_size: Sequence[tuple[datetime, int]],
     ) -> Table:
         # Instead of re-building the whole table, we may use `table.rows.__delitem__()`
         # BUT, the width of the table will not be updated, so maybe it's not a good idea.
@@ -121,17 +121,17 @@ class RichTable:
                 c(translated),
                 end_section=True,
             )
-        for time, size in n_pending_transcribe:
+        for time, size in pending_time_size:
             table.add_row(format_local_time(time), "", format_bytes_str(size), "_", "_")
         return table
 
     def live_print(
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
-        n_pending_transcribe: Sequence[tuple[datetime, int]],
+        pending_time_size: Sequence[tuple[datetime, int]],
     ):
         # #TODO: show current time
-        table = self._build_live_table(table_content, n_pending_transcribe)
+        table = self._construct_new_table(table_content, pending_time_size)
         self.live_console.update(table, refresh=True)
 
     def save_history_html(
@@ -140,23 +140,19 @@ class RichTable:
         html_path: str,
     ):
         # #TODO:LTR the html has bad styling... Even worse than SVG
-        table = self._build_live_table(table_content, [])
+        table = self._construct_new_table(table_content, [])
         output_buffer = StringIO()
         with Console(file=output_buffer, record=True) as console:
             console.print(table)
             console.save_html(html_path)
 
-    def save_table(  # #TODO: ren save_history_str
+    def save_history_str(
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
-        n_pending_transcribe: Sequence[tuple[datetime, int]],  # #TODO: ren: rm n_
-        html_path: str | None = None,
+        pending_time_size: Sequence[tuple[datetime, int]],
     ) -> str:
-        table = self._build_live_table(table_content, n_pending_transcribe)
+        table = self._construct_new_table(table_content, pending_time_size)
         output_buffer = StringIO()
         str_console = Console(file=output_buffer, record=True)
         str_console.print(table)
-        if html_path:
-            str_console.save_html(html_path)
-        console_str = output_buffer.getvalue()
-        return console_str  # console_str  # for testing
+        return output_buffer.getvalue()  # for testing

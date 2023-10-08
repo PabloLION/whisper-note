@@ -25,7 +25,7 @@ class FrozenConfig(NamedTuple):
     # #TODO: use a path lib Path for my config Path for readability
     store_merged_wav: str
     merged_transcription: str
-    live_transcription: str  # #TODO: rename to live_history_html
+    live_history_html: str
 
     def mutated_copy(self: "FrozenConfig", **kwargs: ConfigValue) -> "FrozenConfig":
         nf = FrozenConfig(**{**self._asdict(), **kwargs})  # type: ignore
@@ -47,7 +47,7 @@ class FrozenConfig(NamedTuple):
             # #TODO: change these three to Path
             "store_merged_wav": str,
             "merged_transcription": str,
-            "live_transcription": str,
+            "live_history_html": str,
         }
         for k, v in self._asdict().items():
             if isinstance(v, expected_type[k]):
@@ -68,5 +68,5 @@ EXAMPLE_CONFIG = FrozenConfig(
     summarizer="NONE",
     store_merged_wav="",
     merged_transcription="",
-    live_transcription="",
+    live_history_html="",
 )
