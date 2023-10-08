@@ -2,11 +2,7 @@ import dotenv
 import os
 import yaml
 
-from whisper_note.supportive_class import Language, FrozenConfig
-
-
-class ConfigLoadingError(ValueError):  # TODO: ren to InvalidConfigError
-    pass
+from whisper_note.supportive_class import Language, FrozenConfig, InvalidConfigError
 
 
 DEFAULT_CONFIG_FOLDER = os.path.abspath(os.path.join(__file__, "..", ".."))
@@ -44,7 +40,7 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
         case "DEEPL":
             parsed_cfg["translator_env_key"] = "DEEPL_API_KEY"
         case not_matched:
-            raise ConfigLoadingError(f"Unknown translator: translator={not_matched}")
+            raise InvalidConfigError(f"Unknown translator: translator={not_matched}")
 
     # check the merged wav file
     wav_path = parsed_cfg["store_merged_wav"]
@@ -52,24 +48,24 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
         if not os.path.exists(wav_path):
             ...
         elif os.path.isdir(wav_path):
-            raise ConfigLoadingError(
+            raise InvalidConfigError(
                 f"store_merged_wav={parsed_cfg['store_merged_wav']} is a directory"
             )
         elif os.path.getsize(wav_path) != 0:
-            raise ConfigLoadingError(
+            raise InvalidConfigError(
                 f"store_merged_wav={parsed_cfg['store_merged_wav']} is not empty"
             )
 
     # parse summarizer
     if parsed_cfg["summarizer"] == "NONE":
         if parsed_cfg["another_transcription"]:
-            raise ConfigLoadingError(
+            raise InvalidConfigError(
                 "another_transcription is only available when summarizer is not NONE"
             )
     elif parsed_cfg["summarizer"] == "GPT3":
         parsed_cfg["summarizer_env_key"] = "GPT3_API_KEY"
     else:
-        raise ConfigLoadingError(
+        raise InvalidConfigError(
             f"Unknown summarizer: summarizer={parsed_cfg['summarizer']}"
         )
 

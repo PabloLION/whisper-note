@@ -1,6 +1,11 @@
 from typing import NamedTuple, final
 from .enum_language import Language
 
+
+class InvalidConfigError(ValueError):
+    pass
+
+
 # I don't know how to gather the types of values dynamically
 ConfigValue = str | Language | int | None
 
