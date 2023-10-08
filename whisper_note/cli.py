@@ -139,9 +139,12 @@ class RichTable:
         table_content: Iterator[tuple[str, str, int, bool, bool]],
         html_path: str,
     ):
+        # #TODO:LTR the html has bad styling... Even worse than SVG
         table = self._build_live_table(table_content, [])
-        with Console(file=open(html_path, "w"), record=True) as console:
+        output_buffer = StringIO()
+        with Console(file=output_buffer, record=True) as console:
             console.print(table)
+            console.save_html(html_path)
 
     def save_table(  # #TODO: ren save_history_str
         self,

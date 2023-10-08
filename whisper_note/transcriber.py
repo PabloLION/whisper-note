@@ -85,8 +85,13 @@ class Transcriber:
                 with open(self.config.merged_transcription, "w") as f:
                     f.write(txt)
             LOG.info(f"Merged text generated: {self.config.merged_transcription}")
+
         if self.config.live_transcription:
+            LOG.info("generating HTML of live transcription history...")
             self.transcription.export_history_html(self.config.live_transcription)
+            LOG.info(
+                f"HTML of live transcription history generated: {self.config.live_transcription}"
+            )
 
     def get_transcription(self):
         return self.transcription
