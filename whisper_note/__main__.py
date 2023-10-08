@@ -9,7 +9,7 @@ def run_core():
 
 
 def run():
-    # hooked to poetry run whisper-note, poetry run note
+    # hooked to "poetry run whisper-note", "poetry run note".
     run_core()
 
 

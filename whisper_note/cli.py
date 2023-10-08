@@ -7,6 +7,7 @@ import sys
 from typing import Iterator
 from rich.console import Console
 from rich.table import Table
+from rich.live import Live
 
 from whisper_note.supportive_class import (
     CLEAR_COMMAND,
@@ -70,13 +71,15 @@ def build_default_args() -> argparse.Namespace:
 
 class RichTable:
     console: Console
-
-    @property
-    def screen_width(self) -> int:
-        return self.console.width
+    live_console: Live
+    live_table: Table
 
     def __init__(self) -> None:
         self.console = Console(record=True)
+        self.live_console = Live(
+            console=self.console, vertical_overflow="visible", auto_refresh=False
+        ).__enter__()
+        self.live_table = self.new_table()
 
     def new_table(self) -> Table:
         time_width = 14
@@ -107,16 +110,11 @@ class RichTable:
         table.add_column("CN", justify="center", width=checker_width)
         return table
 
-    def print_to_save(
+    def live_print(
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
         n_pending_transcribe: deque[tuple[datetime, int]],
-        html_path: str | None = None,
-    ) -> str:
-        # self.console.clear(home=False) # causes the terminal to sometime scroll up to the top
-        # os.system(CLEAR_COMMAND)
-        # sys.stdout.flush()
-
+    ):
         table = self.new_table()
         for time, text, sz, transcribed, translated in table_content:
             c = lambda x: "✓" if x else "_"  # to check char
@@ -130,17 +128,35 @@ class RichTable:
             )
         for time, size in n_pending_transcribe:
             table.add_row(format_local_time(time), "", format_bytes_str(size), "_", "_")
+
+        self.live_console.update(table, refresh=True)
+
+    def print_to_save(
+        self,
+        table_content: Iterator[tuple[str, str, int, bool, bool]],
+        n_pending_transcribe: deque[tuple[datetime, int]],
+        html_path: str | None = None,
+    ) -> str:
+        table = self.new_table()
+        for time, text, sz, transcribed, translated in table_content:
+            c = lambda x: "✓" if x else "_"  # to check char
+            table.add_row(
+                time,
+                text,
+                format_bytes_str(sz),
+                c(transcribed),  # do we actually need to pass this?
+                c(translated),
+                end_section=True,
+            )
+        for time, size in n_pending_transcribe:
+            table.add_row(format_local_time(time), "", format_bytes_str(size), "_", "_")
+
         output_buffer = StringIO()
-        # sys.stdout.flush()
 
         self.console.print(table)
-        # console_io = Console(file=output_buffer)
-        # console_io.print(table)
-        # table_str = output_buffer.getvalue()
-        # print(table_str)
 
-        # if html_path:
-        #     self.console.save_html(html_path)
-        # console_str = self.console.export_text()
+        if html_path:
+            self.console.save_html(html_path)
+        console_str = self.console.export_text()
         print(datetime.now(), flush=True)  # scroll to bottom
         return ""  # console_str  # for testing

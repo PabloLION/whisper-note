@@ -75,7 +75,7 @@ class Transcriptions:
 
     # #TODO: add a no_truncate option
     def rich_print(self, pending_recordings: deque[tuple[datetime, int]]) -> None:
-        rich_table.print_to_save(self.format_for_rich(), pending_recordings)
+        rich_table.live_print(self.format_for_rich(), pending_recordings)
 
     def print_phrase(self, index: int, with_time: bool = False) -> None:
         """deprecating!"""
