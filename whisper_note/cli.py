@@ -2,7 +2,6 @@ import argparse
 from collections import deque
 from datetime import datetime
 from io import StringIO
-import os
 import sys
 from typing import Iterator
 from rich.console import Console
@@ -135,6 +134,7 @@ class RichTable:
         table_content: Iterator[tuple[str, str, int, bool, bool]],
         n_pending_transcribe: deque[tuple[datetime, int]],
     ):
+        # #TODO: show current time
         table = self._build_live_table(table_content, n_pending_transcribe)
         self.live_console.update(table, refresh=True)
 
