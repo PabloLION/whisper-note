@@ -37,9 +37,9 @@ class Transcriber:
         model = self.config.model
         if self.config.source_lang == Language.EN and not model.endswith(".en"):
             model += ".en"
-        print(f"Loading whisper model '{model}'")
+        print(f"Loading whisper model [{model}]")
         whisper_model = whisper.load_model(model)
-        print("Whisper model loaded.")
+        print(f"Whisper model [{model}] loaded.")
         return whisper_model
 
     def live_transcribe(self) -> None:

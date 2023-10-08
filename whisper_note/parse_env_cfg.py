@@ -14,6 +14,18 @@ from whisper_note.supportive_class import (
 DEFAULT_CONFIG_FOLDER = os.path.abspath(os.path.join(__file__, "..", ".."))
 
 
+def assert_empty_file(path: str, config_name: str) -> None:
+    if not path:
+        return
+
+    if not os.path.exists(path):
+        ...  # The creation is automatic when opened in "ab" mode.
+    elif os.path.isdir(path):  # #TODO:TBD gen a .wav file in this folder?
+        raise InvalidConfigError(f"config {config_name}={path} is a directory")
+    elif os.path.getsize(path) != 0:
+        raise InvalidConfigError(f"config {config_name}={path} is not empty")
+
+
 def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> FrozenConfig:
     cfg_path = os.path.join(env_config_path, "config.yml")
     env_path = os.path.join(env_config_path, ".env")
@@ -37,7 +49,7 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
         parsed_cfg["phrase_max_second"] = cfg.get("phrase_max_second", 3)
         parsed_cfg["store_merged_wav"] = cfg.get("store_merged_wav", False)
         parsed_cfg["summarizer"] = cfg.get("summarizer", "NONE")
-        parsed_cfg["another_transcription"] = cfg.get("another_transcription", False)
+        parsed_cfg["merged_transcription"] = cfg.get("merged_transcription", False)
 
     # parse translator api key
     match parsed_cfg["translator"]:
@@ -53,20 +65,26 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
     if wav_path == "[LIVE]":
         filename = format_filename(f"{datetime.now()}.wav")
         parsed_cfg["store_merged_wav"] = wav_path = filename
-    if wav_path:
-        if not os.path.exists(wav_path):
-            ...  # The creation is automatic when opened in "ab" mode.
-        elif os.path.isdir(wav_path):
-            raise InvalidConfigError(f"store_merged_wav={wav_path} is a directory")
-        elif os.path.getsize(wav_path) != 0:
-            raise InvalidConfigError(f"store_merged_wav={wav_path} is not empty")
+    assert_empty_file(wav_path, "store_merged_wav")
+    if wav_path == "" and parsed_cfg["merged_transcription"]:
+        raise InvalidConfigError(
+            "merged_transcription is only available when store_merged_wav is not empty"
+        )
+
+    # merged transcription
+    txt_path = parsed_cfg["merged_transcription"]
+    if txt_path == "[LIVE]":
+        filename = format_filename(f"{datetime.now()}.txt")
+        parsed_cfg["merged_transcription"] = txt_path = filename
+    assert_empty_file(txt_path, "merged_transcription")
+    if txt_path == "" and parsed_cfg["summarizer"] != "NONE":
+        raise InvalidConfigError(
+            "summarizer is only available when merged_transcription is not empty"
+        )
 
     # parse summarizer
     if parsed_cfg["summarizer"] == "NONE":
-        if parsed_cfg["another_transcription"]:
-            raise InvalidConfigError(
-                "another_transcription is only available when summarizer is not NONE"
-            )
+        ...  # Do nothing
     elif parsed_cfg["summarizer"] == "GPT3":
         parsed_cfg["summarizer_env_key"] = "GPT3_API_KEY"
     else:

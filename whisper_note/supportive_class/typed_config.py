@@ -23,7 +23,7 @@ class FrozenConfig(NamedTuple):
     phrase_max_second: int
     summarizer: str
     store_merged_wav: bool
-    another_transcription: bool
+    merged_transcription: bool
 
     def mutated_copy(self: "FrozenConfig", **kwargs: ConfigValue) -> "FrozenConfig":
         return FrozenConfig(**{**self._asdict(), **kwargs})
@@ -41,5 +41,5 @@ EXAMPLE_CONFIG = FrozenConfig(
     phrase_max_second=3,
     summarizer="NONE",
     store_merged_wav=False,
-    another_transcription=False,
+    merged_transcription=False,
 )

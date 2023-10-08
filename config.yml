@@ -13,10 +13,11 @@ target_lang: "Chinese_Simplified" # default: "Chinese_Simplified"
 ### Export ###
 store_merged_wav: "[LIVE]" # default: ""; or "[LIVE]" to use a dynamic path;
 # store_merged_wav: or a path to store merged wav file. Path can be relative or absolute.
+merged_transcription: "[LIVE]" # default: ""; generate merged transcription from merged wav file, may be slow.
+# merged_transcription: as "store_merged_wav"
 
 ### Summarize ###
 summarizer: "NONE" # "NONE"(no summarization) or "GPT3"
-another_transcription: False # default: False; generate another transcription from merged wav file, may be slow.
 # if false, the summary will be generated with the original transcription.
 
 ### General ###
