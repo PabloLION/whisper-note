@@ -1,8 +1,11 @@
 import argparse
+import os
 from sys import platform
 from typing import Iterator
 from rich.console import Console
 from rich.table import Table
+
+CLEAR_COMMAND = "cls" if os.name == "nt" else "clear"  # #TODO:ref mv
 
 
 def build_default_args() -> argparse.Namespace:
@@ -86,6 +89,7 @@ class RichTable:
         html_path: str | None = None,
     ) -> str:
         self.console.clear()
+        os.system(CLEAR_COMMAND)
         table = self.new_table()
         for time, text, en, cn in table_content:
             table.add_row(time, text, "✓" if en else "_", "✓" if cn else "_")
