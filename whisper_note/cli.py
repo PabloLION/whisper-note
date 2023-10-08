@@ -78,6 +78,7 @@ class RichTable:
         table.add_column(
             "Text & Translation", justify="left", width=text_width, overflow="fold"
         )
+        # #TODO:use realistic lang headers from config
         table.add_column("EN", justify="center", width=checker_width)
         table.add_column("CN", justify="center", width=checker_width)
         return table
@@ -88,7 +89,7 @@ class RichTable:
         n_pending_transcribe: int,
         html_path: str | None = None,
     ) -> str:
-        self.console.clear()
+        self.console.clear(home=False)
         os.system(CLEAR_COMMAND)
         table = self.new_table()
         for time, text, en, cn in table_content:
@@ -96,6 +97,7 @@ class RichTable:
         for _ in range(n_pending_transcribe):
             table.add_row("", "", "_", "_")
         self.console.print(table)
+        print("", end="", flush=True)  # scroll to bottom
         if html_path:
             self.console.save_html(html_path)
         return self.console.export_text()  # for testing

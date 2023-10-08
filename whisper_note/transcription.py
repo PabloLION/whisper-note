@@ -42,6 +42,7 @@ class Transcriptions:
         self.timestamp.append(timestamp)
         # FIX: wrong time format UTC+0
         # TODO: double assert non-empty text
+        # TODO: change translation strategy to here.
         self.time_str.append(timestamp.strftime("%H:%M:%S:%f")[:-3])  # milliseconds
         self.text.append(text)
         self.translated_text.append("")
@@ -61,6 +62,7 @@ class Transcriptions:
             for ts, txt, tran in zip(self.time_str, self.text, self.translated_text)
         )
 
+    # #TODO: show pending record time
     def rich_print(self, n_pending_transcribe: int) -> None:
         rich_table.print_to_save(self.format_for_rich(), n_pending_transcribe)
 

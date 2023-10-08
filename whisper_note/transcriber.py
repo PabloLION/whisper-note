@@ -15,6 +15,7 @@ from whisper_note.transcription import Transcriptions
 
 
 # #TODO: double assert non-empty text
+# #TODO: change Queue to wav file to use more threads and show time
 class Transcriber:
     config: FrozenConfig
     whisper_model: whisper.Whisper
