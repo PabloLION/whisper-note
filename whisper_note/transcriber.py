@@ -50,11 +50,7 @@ class Transcriber:
                 if temp_wav is None:
                     sleep(0.3)  # uninterruptedly recording in another thread
                     continue
-
-                transcribed = self.whisper_model.transcribe(
-                    temp_wav.name, fp16=torch.cuda.is_available()
-                )  # Get transcription from the whisper.
-                text = cast(str, transcribed["text"]).strip()
+                text = self._transcribe_wav(temp_wav.name)
                 if text == "":
                     continue
                 self.transcription.add_phrase(time, text, size)
@@ -63,6 +59,12 @@ class Transcriber:
                 break
         # If the loop is broken, we are done recording.
         self._on_stop_recording()
+
+    def _transcribe_wav(self, path: str) -> str:
+        transcribed = self.whisper_model.transcribe(
+            path, fp16=torch.cuda.is_available()
+        )  # Get transcription from the whisper.
+        return cast(str, transcribed["text"]).strip()
 
     def _on_stop_recording(self):
         print("Stopping recording...")
