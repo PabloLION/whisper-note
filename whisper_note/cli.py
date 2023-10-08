@@ -5,7 +5,7 @@ from typing import Iterator
 from rich.console import Console
 from rich.table import Table
 
-CLEAR_COMMAND = "cls" if os.name == "nt" else "clear"  # #TODO:ref mv
+from whisper_note.supportive_class import CLEAR_COMMAND
 
 
 def build_default_args() -> argparse.Namespace:

@@ -4,10 +4,9 @@ from typing import Iterator, Optional
 from whisper_note.cli import RichTable
 
 
-from whisper_note.supportive_class import TranslatorProtocol
+from whisper_note.supportive_class import TranslatorProtocol, CLEAR_COMMAND
 
 rich_table = RichTable()
-CLEAR_COMMAND = "cls" if os.name == "nt" else "clear"  # #TODO: ref mv
 
 
 class Transcriptions:
