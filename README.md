@@ -32,6 +32,7 @@ I don't know how to install these.
 
 - Large model will cause the script to run slow: the recognition happens slower than a constantly speaking person, with M1 Ultra 128GB RAM.
 - Recommend to use small model: It's faster and the recognition is not bad.
+- See the comment in `config.yml` for more details.
 
 ## Dev
 
@@ -48,7 +49,6 @@ Most of this should be converted to GitHub Issues when published.
   - summary of the text with ChatGPT
   - input aggregated wav file for better recognition, translation, etc.
   - generate .SRT substitute
-  - use dynamic .now() as a default name for the merged file
 - UI:
   - Add a debug panel
   - use more "rich" for error, etc.

@@ -1,8 +1,14 @@
+from datetime import datetime
 import dotenv
 import os
 import yaml
 
-from whisper_note.supportive_class import Language, FrozenConfig, InvalidConfigError
+from whisper_note.supportive_class import (
+    Language,
+    FrozenConfig,
+    InvalidConfigError,
+    format_filename,
+)
 
 
 DEFAULT_CONFIG_FOLDER = os.path.abspath(os.path.join(__file__, "..", ".."))
@@ -44,17 +50,16 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
 
     # check the merged wav file
     wav_path = parsed_cfg["store_merged_wav"]
+    if wav_path == "[LIVE]":
+        filename = format_filename(f"{datetime.now()}.wav")
+        parsed_cfg["store_merged_wav"] = wav_path = filename
     if wav_path:
         if not os.path.exists(wav_path):
-            ...
+            ...  # The creation is automatic when opened in "ab" mode.
         elif os.path.isdir(wav_path):
-            raise InvalidConfigError(
-                f"store_merged_wav={parsed_cfg['store_merged_wav']} is a directory"
-            )
+            raise InvalidConfigError(f"store_merged_wav={wav_path} is a directory")
         elif os.path.getsize(wav_path) != 0:
-            raise InvalidConfigError(
-                f"store_merged_wav={parsed_cfg['store_merged_wav']} is not empty"
-            )
+            raise InvalidConfigError(f"store_merged_wav={wav_path} is not empty")
 
     # parse summarizer
     if parsed_cfg["summarizer"] == "NONE":
