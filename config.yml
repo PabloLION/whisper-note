@@ -3,7 +3,7 @@ linux_microphone: "list" # ignore if not Linux users; "list" shows all microphon
 microphone_energy_threshold: 1000 # default: 1000; minimum audio energy to record
 
 ### Transcription ###
-model: "small" # default: "small.en"  model name
+model: "large" # default: "small.en"  model name
 phrase_max_second: 3 # default: 3; max seconds before forcefully break a phrase
 
 ### Translator ###

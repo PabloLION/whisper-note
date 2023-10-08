@@ -1,3 +1,4 @@
+from collections import deque
 import os
 from datetime import datetime
 from typing import Iterator
@@ -64,11 +65,11 @@ class Transcriptions:
             for ts, txt, tran in zip(self.time_str, self.text, self.translated_text)
         )
 
-    # #TODO: show pending record time
+    # #TODO: show records' size
     # #TODO: show file size
     # #TODO: add a no_truncate option
-    def rich_print(self, n_pending_transcribe: int) -> None:
-        rich_table.print_to_save(self.format_for_rich(), n_pending_transcribe)
+    def rich_print(self, pending_recordings: deque[tuple[datetime, int]]) -> None:
+        rich_table.print_to_save(self.format_for_rich(), pending_recordings)
 
     def print_phrase(self, index: int, with_time: bool = False) -> None:
         indent_len = 15 if with_time else 0  # 15==len("HH:MM:SS:fff | ")

@@ -1,4 +1,6 @@
 import argparse
+from collections import deque
+from datetime import datetime
 import os
 from sys import platform
 from typing import Iterator
@@ -86,7 +88,7 @@ class RichTable:
     def print_to_save(
         self,
         table_content: Iterator[tuple[str, str, bool, bool]],
-        n_pending_transcribe: int,
+        n_pending_transcribe: deque[tuple[datetime, int]],
         html_path: str | None = None,
     ) -> str:
         self.console.clear(home=False)
@@ -94,8 +96,9 @@ class RichTable:
         table = self.new_table()
         for time, text, en, cn in table_content:
             table.add_row(time, text, "✓" if en else "_", "✓" if cn else "_")
-        for _ in range(n_pending_transcribe):
-            table.add_row("", "", "_", "_")
+        for time, size in n_pending_transcribe:
+            # TODO: No border for these rows
+            table.add_row(time.strftime("%H:%M:%S:%f")[:-3], "", "_", "_")
         self.console.print(table)
         print("", end="", flush=True)  # scroll to bottom
         if html_path:
