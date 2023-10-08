@@ -14,7 +14,6 @@ from whisper_note.supportive_class import (
 from whisper_note.transcription import Transcriptions
 
 
-# #TODO: double assert non-empty text
 class Transcriber:
     config: FrozenConfig
     whisper_model: whisper.Whisper
@@ -54,8 +53,9 @@ class Transcriber:
                     temp_wav.name, fp16=torch.cuda.is_available()
                 )  # Get transcription from the whisper.
                 text = cast(str, transcribed["text"]).strip()
+                if text == "":
+                    continue
                 self.transcription.add_phrase(time, text)
-
                 self.transcription.rich_print(self.data_q.qsize())
             except KeyboardInterrupt:
                 break

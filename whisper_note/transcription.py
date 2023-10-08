@@ -38,9 +38,10 @@ class Transcriptions:
         self.clean_on_print = clean_on_print
 
     def add_phrase(self, timestamp: datetime, text: str) -> None:
+        if text.strip() == "":
+            return
         self.timestamp.append(timestamp)
         # FIX: wrong time format UTC+0
-        # TODO: double assert non-empty text
         self.time_str.append(timestamp.strftime("%H:%M:%S:%f")[:-3])  # milliseconds
         self.text.append(text)
         self.translated_text.append("")
