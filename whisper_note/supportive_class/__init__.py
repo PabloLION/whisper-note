@@ -7,6 +7,6 @@ from .protocol_translator import DeepLTranslator, TranslatorProtocol, get_transl
 
 # DO NOT SORT IMPORTS! the order is important.
 
-from .formatter import format_bytes_str, format_local_time
+from .formatter import format_bytes_str, format_local_time, format_filename
 
 # DO NOT SORT IMPORTS! the order is important.

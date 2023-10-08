@@ -1,6 +1,10 @@
 import datetime
 
-from whisper_note.supportive_class import format_bytes_str, format_local_time
+from whisper_note.supportive_class import (
+    format_bytes_str,
+    format_local_time,
+    format_filename,
+)
 
 
 def test_format_bytes_str():
@@ -37,3 +41,26 @@ def test_format_local_time():
     assert format_local_time(time_different_format) != "12:30:45.678"
 
     print("All test cases pass")
+
+
+def test_format_filename():
+    assert format_filename(
+        "file<name>:with/invalid\\characters?"
+    ), "file-name-wit == invalid-characters-"
+    assert format_filename(
+        'file|name*with"reserved?chars'
+    ), "file-nam == with-reserved-chars"
+    assert format_filename("file/name") == "file-name"
+    assert format_filename("file\\name") == "file-name"
+    assert format_filename("file?name") == "file-name"
+    assert format_filename('file"name') == "file-name"
+    assert format_filename("file<name") == "file-name"
+    assert format_filename("file>name") == "file-name"
+    assert format_filename("file:name") == "file-name"
+    assert format_filename("file/name") == "file-name"
+    assert format_filename("file|name") == "file-name"
+    assert format_filename("file*name") == "file-name"
+    assert format_filename('file"name') == "file-name"
+    assert format_filename("file?name") == "file-name"
+    assert format_filename("file/name") == "file-name"
+    assert format_filename("file\\name") == "file-name"
