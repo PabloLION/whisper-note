@@ -1,5 +1,5 @@
 from io import BufferedWriter
-import os
+import os.path
 from typing import Protocol, Sequence
 
 
@@ -12,6 +12,30 @@ class SupportSeekAndRead(Protocol):
 
     def read(self, n: int = -1) -> bytes:
         ...
+
+
+def parse_my_path_config(path_config: str) -> str:
+    """
+    - "" means nothing will be created.
+    - "path/to/folder/" means "YYYY-MM-DD HH-MM-SS-ffffff" will be created there.
+    - "path/to/file" means a file named "path/to/file" will be created at there.
+    - Both "path/to/folder/" and "path/to/file" can be relative or absolute.
+    - To encourage user to be aware if the path is a file or folder,
+    - "path/to/folder" and "path/to/file/" are not allowed.
+    """
+    path_config = path_config.strip()
+    if path_config == "":
+        return ""
+    elif path_config.endswith("/"):
+        assert os.path.isdir(path_config), f"{path_config} is not a folder"
+        return path_config
+    else:
+        assert (
+            os.path.isfile(path_config)
+            or not os.path.exists(path_config)
+            or os.path.getsize(path_config) == 0
+        ), f"{path_config} exists and is not empty, cannot write it"
+        return path_config
 
 
 # #TEST_MISSING

@@ -11,10 +11,10 @@ source_lang: "English" # default: "English"
 target_lang: "Chinese_Simplified" # default: "Chinese_Simplified"
 
 ### Export ###
-store_merged_wav: "[LIVE]" # default: ""; or "[LIVE]" to use a dynamic path;
-# store_merged_wav: or a path to store merged wav file. Path can be relative or absolute.
-merged_transcription: "[LIVE]" # default: ""; generate merged transcription from merged wav file, may be slow.
-# merged_transcription: as "store_merged_wav"
+# All values here are parsed as "PATH" type. See "PATH" type below.
+live_transcription: "[LIVE]" # store the result of live transcription
+store_merged_wav: "[LIVE]" #
+merged_transcription: "[LIVE]" #
 
 ### Summarize ###
 summarizer: "NONE" # "NONE"(no summarization) or "GPT3"
@@ -23,3 +23,9 @@ summarizer: "NONE" # "NONE"(no summarization) or "GPT3"
 ### General ###
 linux_microphone: "list" # ignore if not Linux users; "list" shows all microphones.
 microphone_energy_threshold: 1000 # default: 1000; minimum audio energy to record
+
+### PATH type ###
+# "" means nothing will be created.
+# "path/to/folder/" means a file will be created in the folder, named as "YYYY-MM-DD HH-MM-SS-ffffff"
+# "path/to/file" means a file named "path/to/file" will be created at this file.
+# Both "path/to/folder/" and "path/to/file" can be relative or absolute.
