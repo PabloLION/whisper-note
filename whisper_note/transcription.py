@@ -8,8 +8,6 @@ from whisper_note.cli import RichTable
 
 from whisper_note.supportive_class import TranslatorProtocol, format_local_time
 
-rich_table = RichTable()  # #TODO: couple this to Transcriptions
-
 
 class Transcriptions:
     """
@@ -25,13 +23,12 @@ class Transcriptions:
     live_print: bool
     live_translator: TranslatorProtocol | None
     # maybe another full text translator
-    clean_on_print: bool
+    rich_table = RichTable()
 
     def __init__(
         self,
         live_print: bool,
         live_translator: TranslatorProtocol | None = None,
-        clean_on_print: bool = True,
     ) -> None:
         self.timestamp = []
         self.text = []
@@ -40,7 +37,6 @@ class Transcriptions:
         self.translated_text = []
         self.live_print = live_print
         self.live_translator = live_translator
-        self.clean_on_print = clean_on_print
 
     def add_phrase(self, timestamp: datetime, text: str, wav_size: int) -> None:
         if text.strip() == "":
@@ -72,9 +68,8 @@ class Transcriptions:
 
     # #TODO: add a no_truncate option
     def rich_print(self, pending_recordings: deque[tuple[datetime, int]]) -> None:
-        rich_table.live_print(self.format_for_rich(), pending_recordings)
+        self.rich_table.live_print(self.format_for_rich(), pending_recordings)
 
-    # #TODO: add summary with ChatGPT
     def clear(self) -> None:  # never used
         self.timestamp.clear()
         self.time_str.clear()
@@ -82,7 +77,7 @@ class Transcriptions:
         self.translated_text.clear()
 
     def export_history_html(self, path: Path) -> None:
-        rich_table.save_history_html(self.format_for_rich(), path)
+        self.rich_table.save_history_html(self.format_for_rich(), path)
 
     def __str__(self) -> str:
         return "\n".join(self.text)

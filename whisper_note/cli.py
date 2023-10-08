@@ -12,22 +12,6 @@ from rich.table import Table
 from whisper_note.supportive_class import LOG, format_bytes_str, format_local_time
 
 
-def scroll_down(lines):
-    if "darwin" in sys.platform:
-        # sys.stdout.write(f"\033[{lines}T")  # Scroll down by 'lines' lines
-        sys.stdout.flush()
-    elif "win" in sys.platform:
-        import ctypes
-
-        kernel32 = ctypes.windll.kernel32  # type: ignore , from ChatGPT
-        handle = kernel32.GetStdHandle(-11)  # Standard Output Handle
-        kernel32.ScrollConsoleScreenBufferW(handle, 0, None, (lines, lines), None)
-    elif "linux" in sys.platform:
-        LOG.warning(f"cannot scroll down {lines} lines on {sys.platform}")
-    else:
-        raise NotImplementedError(f"Unknown sys.platform: {sys.platform}")
-
-
 def build_default_args() -> argparse.Namespace:
     # #TODO:LTR load args from cli and parse it to FrozenConfig
     parser = argparse.ArgumentParser()

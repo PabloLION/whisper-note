@@ -67,7 +67,7 @@ class Transcriber:
         )  # Get transcription from the whisper.
         return cast(str, transcribed["text"]).strip()
 
-    def _on_stop_recording(self):
+    def _on_stop_recording(self):  # #TODO: add summary with ChatGPT
         if self.config.store_merged_wav:  # double checking is good
             LOG.info("Stopping recording...")
             self.recorder.write_merged_wav()
