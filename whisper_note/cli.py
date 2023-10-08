@@ -1,6 +1,6 @@
 import argparse
 from sys import platform
-from typing import Final
+from typing import Iterator
 from rich.console import Console
 from rich.table import Table
 
@@ -44,14 +44,18 @@ def build_default_args() -> argparse.Namespace:
 
 class RichTable:
     console: Console
-    table: Table
 
     @property
     def screen_width(self) -> int:
         return self.console.width
 
     def __init__(self) -> None:
-        self.console = Console()
+        self.console = Console(record=True)
+
+    def new_table(self) -> Table:
+        time_width = 11
+        checker_width = 4
+        text_width = self.console.width - time_width - checker_width * 2 - 3 * 5
 
         table = Table(
             show_header=True,
@@ -61,9 +65,6 @@ class RichTable:
             show_lines=True,
             show_edge=False,
         )
-        time_width = 11
-        checker_width = 4
-        text_width = self.console.width - time_width - checker_width * 2 - 3 * 5
         table.add_column(
             "Time",
             style="dim",
@@ -76,19 +77,21 @@ class RichTable:
         )
         table.add_column("EN", justify="center", width=checker_width)
         table.add_column("CN", justify="center", width=checker_width)
+        return table
 
-        table.add_row(
-            "00:00:00:000",
-            "Hello, world!\n你好，世界！",
-            "✓",
-            "_",
-        )
-        table.add_row(
-            "00:00:00:000",
-            "lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco\n你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！你好，世界！",
-            "✓",
-            "_",
-        )
-
-    def print(self) -> None:
-        self.console.print(self.table)
+    def print_to_save(
+        self,
+        table_content: Iterator[tuple[str, str, bool, bool]],
+        n_pending_transcribe: int,
+        html_path: str | None = None,
+    ) -> str:
+        self.console.clear()
+        table = self.new_table()
+        for time, text, en, cn in table_content:
+            table.add_row(time, text, "✓" if en else "_", "✓" if cn else "_")
+        for _ in range(n_pending_transcribe):
+            table.add_row("", "", "_", "_")
+        self.console.print(table)
+        if html_path:
+            self.console.save_html(html_path)
+        return self.console.export_text()  # for testing
