@@ -1,7 +1,6 @@
 import os
 from collections import deque
 from datetime import datetime
-from io import BufferedWriter
 from sys import platform
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
 

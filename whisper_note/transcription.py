@@ -5,11 +5,7 @@ from typing import Iterator
 from whisper_note.cli import RichTable
 
 
-from whisper_note.supportive_class import (
-    TranslatorProtocol,
-    CLEAR_COMMAND,
-    format_local_time,
-)
+from whisper_note.supportive_class import TranslatorProtocol, format_local_time
 
 rich_table = RichTable()
 

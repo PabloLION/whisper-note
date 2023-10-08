@@ -9,7 +9,7 @@ from .protocol_translator import DeepLTranslator, TranslatorProtocol, get_transl
 
 # DO NOT SORT IMPORTS! the order is important. If this line after all imports, it's wrong.
 
-from .constants import CLEAR_COMMAND, WavTimeSizeQueue, LOG
+from .constants import WavTimeSizeQueue, LOG
 from .formatter import format_bytes_str, format_local_time, format_filename
 
 # DO NOT SORT IMPORTS! the order is important.
