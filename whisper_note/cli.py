@@ -1,14 +1,14 @@
 import argparse
-from collections import deque
+import sys
 from datetime import datetime
 from io import StringIO
-import sys
-from typing import Iterator
-from rich.console import Console
-from rich.table import Table
-from rich.live import Live
+from typing import Iterator, Sequence
 
-from whisper_note.supportive_class import format_bytes_str, format_local_time, LOG
+from rich import print
+from rich.console import Console
+from rich.live import Live
+from rich.table import Table
+from whisper_note.supportive_class import LOG, format_bytes_str, format_local_time
 
 
 def scroll_down(lines):
@@ -103,10 +103,10 @@ class RichTable:
         table.add_column("CN", justify="center", width=checker_width)
         return table
 
-    def _build_live_table(
+    def _build_live_table(  # #TODO: ren: _construct_new_rich_table
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
-        n_pending_transcribe: deque[tuple[datetime, int]],
+        n_pending_transcribe: Sequence[tuple[datetime, int]],
     ) -> Table:
         # Instead of re-building the whole table, we may use `table.rows.__delitem__()`
         # BUT, the width of the table will not be updated, so maybe it's not a good idea.
@@ -128,16 +128,25 @@ class RichTable:
     def live_print(
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
-        n_pending_transcribe: deque[tuple[datetime, int]],
+        n_pending_transcribe: Sequence[tuple[datetime, int]],
     ):
         # #TODO: show current time
         table = self._build_live_table(table_content, n_pending_transcribe)
         self.live_console.update(table, refresh=True)
 
-    def save_table(
+    def save_history_html(
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
-        n_pending_transcribe: deque[tuple[datetime, int]],
+        html_path: str,
+    ):
+        table = self._build_live_table(table_content, [])
+        with Console(file=open(html_path, "w"), record=True) as console:
+            console.print(table)
+
+    def save_table(  # #TODO: ren save_history_str
+        self,
+        table_content: Iterator[tuple[str, str, int, bool, bool]],
+        n_pending_transcribe: Sequence[tuple[datetime, int]],  # #TODO: ren: rm n_
         html_path: str | None = None,
     ) -> str:
         table = self._build_live_table(table_content, n_pending_transcribe)

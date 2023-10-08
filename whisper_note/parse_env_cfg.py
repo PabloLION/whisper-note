@@ -1,4 +1,3 @@
-from datetime import datetime
 import dotenv
 import os
 import yaml
@@ -7,7 +6,6 @@ from whisper_note.supportive_class import (
     Language,
     FrozenConfig,
     InvalidConfigError,
-    format_filename,
 )
 from whisper_note.supportive_class.file_and_io import parse_path_config
 
@@ -41,8 +39,8 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
         parsed_cfg["live_transcription"] = cfg.get("live_transcription", "")
         parsed_cfg["summarizer"] = cfg.get("summarizer", "NONE")
 
-    parsed_cfg["live_transcription"] = parse_path_config(
-        parsed_cfg["live_transcription"]
+    parsed_cfg["live_transcription"] = (
+        parse_path_config(parsed_cfg["live_transcription"]) + ".html"
     )
 
     # parse translator api key

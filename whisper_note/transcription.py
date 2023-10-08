@@ -7,7 +7,7 @@ from whisper_note.cli import RichTable
 
 from whisper_note.supportive_class import TranslatorProtocol, format_local_time
 
-rich_table = RichTable()
+rich_table = RichTable()  # #TODO: couple this to Transcriptions
 
 
 class Transcriptions:
@@ -79,6 +79,9 @@ class Transcriptions:
         self.time_str.clear()
         self.text.clear()
         self.translated_text.clear()
+
+    def export_history_html(self, path: str) -> None:
+        rich_table.save_history_html(self.format_for_rich(), path)
 
     def __str__(self) -> str:
         return "\n".join(self.text)
