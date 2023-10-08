@@ -1,6 +1,7 @@
 from datetime import datetime
 from io import BufferedWriter
 import os.path
+from pathlib import Path
 from typing import Protocol, Sequence
 
 from whisper_note.supportive_class import format_filename, format_local_time
@@ -17,7 +18,7 @@ class SupportSeekAndRead(Protocol):
         ...
 
 
-def parse_path_config(path_config: str) -> str:
+def parse_path_config(path_config: str) -> Path | None:
     """
     Return an absolute path to the new file, without extension.
 
@@ -29,18 +30,18 @@ def parse_path_config(path_config: str) -> str:
     - To encourage user to be aware if the path is a file or folder,
         "path/to/folder" and "path/to/file/" are not allowed.
     """
-    path_config = path_config.strip()
-    if path_config == "":
-        return ""
+    if path_config.strip() == "":
+        return None
+    path = Path(path_config.strip())
     filename_no_ext = format_filename(format_local_time(datetime.now()))
     if path_config.endswith("/" or "\\"):
-        assert os.path.isdir(path_config), f"{path_config} is not a folder"
-        return os.path.join(path_config, filename_no_ext)
+        assert path.is_dir(), f"{path_config} is not a folder"
+        return path / filename_no_ext
     else:
-        assert not os.path.exists(path_config) or (
-            os.path.isfile(path_config) and os.path.getsize(path_config) == 0
+        assert path.exists() or (
+            path.is_file() and os.path.getsize(path) == 0
         ), f"{path_config} exists and is not empty, cannot write it"
-        return os.path.abspath(path_config)
+        return path
 
 
 # #TEST_MISSING

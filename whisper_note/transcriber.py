@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from queue import Queue
 from time import sleep
 from typing import cast
@@ -50,7 +51,7 @@ class Transcriber:
                 if temp_wav is None:
                     sleep(0.3)  # uninterruptedly recording in another thread
                     continue
-                text = self._transcribe_wav(temp_wav.name)
+                text = self._transcribe_wav(Path(temp_wav.name))
                 if text == "":
                     continue
                 self.transcription.add_phrase(time, text, size)
@@ -60,9 +61,9 @@ class Transcriber:
         # If the loop is broken, we are done recording.
         self._on_stop_recording()
 
-    def _transcribe_wav(self, path: str) -> str:
+    def _transcribe_wav(self, path: Path) -> str:
         transcribed = self.whisper_model.transcribe(
-            path, fp16=torch.cuda.is_available()
+            str(path), fp16=torch.cuda.is_available()
         )  # Get transcription from the whisper.
         return cast(str, transcribed["text"]).strip()
 
@@ -77,6 +78,7 @@ class Transcriber:
             LOG.info(f"Merged wav generated: {self.config.merged_transcription}")
 
         if self.config.merged_transcription:
+            assert self.config.store_merged_wav is not None, "Uncaught invalid config"
             LOG.info("generating transcription...")
             txt = self._transcribe_wav(self.config.store_merged_wav)
             if txt == "":

@@ -39,9 +39,8 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
         parsed_cfg["live_history_html"] = cfg.get("live_history_html", "")
         parsed_cfg["summarizer"] = cfg.get("summarizer", "NONE")
 
-    parsed_cfg["live_history_html"] = (
-        parse_path_config(parsed_cfg["live_history_html"]) + ".html"
-    )
+    _path = parse_path_config(parsed_cfg["live_history_html"])
+    parsed_cfg["live_history_html"] = _path.with_suffix(".html") if _path else None
 
     # parse translator api key
     translator = parsed_cfg["translator"]
@@ -54,7 +53,8 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
 
     # check the merged wav file
     wav_path = parsed_cfg["store_merged_wav"]
-    parsed_cfg["store_merged_wav"] = parse_path_config(wav_path) + ".wav"
+    _path = parse_path_config(wav_path)
+    parsed_cfg["store_merged_wav"] = _path.with_suffix(".wav") if _path else None
     if wav_path == "" and parsed_cfg["merged_transcription"]:
         raise InvalidConfigError(
             "merged_transcription is only available when store_merged_wav is not empty"
@@ -62,7 +62,8 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
 
     # merged transcription
     txt_path = parsed_cfg["merged_transcription"]
-    parsed_cfg["merged_transcription"] = parse_path_config(txt_path) + ".txt"
+    _path = parse_path_config(txt_path)
+    parsed_cfg["merged_transcription"] = _path.with_suffix(".txt") if _path else None
     if txt_path == "" and parsed_cfg["summarizer"] != "NONE":
         raise InvalidConfigError(
             "summarizer is only available when merged_transcription is not empty"

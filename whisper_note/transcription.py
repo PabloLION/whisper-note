@@ -1,6 +1,7 @@
 from collections import deque
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Iterator
 from whisper_note.cli import RichTable
 
@@ -80,7 +81,7 @@ class Transcriptions:
         self.text.clear()
         self.translated_text.clear()
 
-    def export_history_html(self, path: str) -> None:
+    def export_history_html(self, path: Path) -> None:
         rich_table.save_history_html(self.format_for_rich(), path)
 
     def __str__(self) -> str:

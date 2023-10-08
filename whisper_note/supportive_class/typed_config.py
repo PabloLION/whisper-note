@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import NamedTuple, final
 from .enum_language import Language
 
@@ -22,10 +23,9 @@ class FrozenConfig(NamedTuple):
     energy_threshold: int
     phrase_max_second: int
     summarizer: str
-    # #TODO: use a path lib Path for my config Path for readability
-    store_merged_wav: str
-    merged_transcription: str
-    live_history_html: str
+    store_merged_wav: Path | None
+    merged_transcription: Path | None
+    live_history_html: Path | None
 
     def mutated_copy(self: "FrozenConfig", **kwargs: ConfigValue) -> "FrozenConfig":
         nf = FrozenConfig(**{**self._asdict(), **kwargs})  # type: ignore
@@ -44,10 +44,9 @@ class FrozenConfig(NamedTuple):
             "energy_threshold": int,
             "phrase_max_second": int,
             "summarizer": str,
-            # #TODO: change these three to Path
-            "store_merged_wav": str,
-            "merged_transcription": str,
-            "live_history_html": str,
+            "store_merged_wav": Path | None,
+            "merged_transcription": Path | None,
+            "live_history_html": Path | None,
         }
         for k, v in self._asdict().items():
             if isinstance(v, expected_type[k]):
@@ -66,7 +65,7 @@ EXAMPLE_CONFIG = FrozenConfig(
     energy_threshold=1000,
     phrase_max_second=3,
     summarizer="NONE",
-    store_merged_wav="",
-    merged_transcription="",
-    live_history_html="",
+    store_merged_wav=None,
+    merged_transcription=None,
+    live_history_html=None,
 )

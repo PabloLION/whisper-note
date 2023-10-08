@@ -1,4 +1,5 @@
 import argparse
+from pathlib import Path
 import sys
 from datetime import datetime
 from io import StringIO
@@ -137,16 +138,16 @@ class RichTable:
     def save_history_html(
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
-        html_path: str,
+        html_path: Path,
     ):
         # #TODO:LTR the html has bad styling... Even worse than SVG
         table = self._construct_new_table(table_content, [])
         output_buffer = StringIO()
         with Console(file=output_buffer, record=True) as console:
             console.print(table)
-            console.save_html(html_path)
+            console.save_html(str(html_path))
 
-    def save_history_str(
+    def gen_history_str(
         self,
         table_content: Iterator[tuple[str, str, int, bool, bool]],
         pending_time_size: Sequence[tuple[datetime, int]],
