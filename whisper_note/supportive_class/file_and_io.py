@@ -4,7 +4,7 @@ import os.path
 from pathlib import Path
 from typing import Protocol, Sequence
 
-from whisper_note.supportive_class import format_filename, format_local_time
+from whisper_note.supportive_class import format_filename, format_local_time, LOG
 
 
 WAV_HEADER_SIZE = 44  # suppose it's always 44 bytes
@@ -46,7 +46,9 @@ def parse_path_config(path_config: str) -> Path | None:
 
 # #TEST_MISSING
 def merge_wav_files(wav_files: Sequence[SupportSeekAndRead], output: BufferedWriter):
-    assert len(wav_files) > 0, "No wav files to merge"
+    if len(wav_files) == 0:
+        LOG.warning("No wav files to merge")
+        return
     assert output.writable(), f"{output.name} is not writable"
     assert os.path.exists(output.name), f"{output.name} not found"
     assert os.path.getsize(output.name) == 0, f"{output.name} is not empty"
