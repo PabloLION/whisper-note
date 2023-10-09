@@ -55,7 +55,7 @@ I don't know how to install these.
 - Assume `pwd` is the root of this repo.
 
 ```zsh
-poetry install
+poetry install --with dev
 poetry run pre-commit install
 touch .env
 ```
