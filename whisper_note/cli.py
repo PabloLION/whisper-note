@@ -5,11 +5,11 @@ from datetime import datetime
 from io import StringIO
 from typing import Iterator, Sequence
 
-from rich import print
-from rich.console import Console
+from rich.console import Console, Group
 from rich.live import Live
 from rich.table import Table
-from whisper_note.supportive_class import LOG, format_bytes_str, format_local_time
+from rich.align import Align
+from whisper_note.supportive_class import format_bytes_str, format_local_time
 
 
 def build_default_args() -> argparse.Namespace:
@@ -115,9 +115,11 @@ class RichTable:
         table_content: Iterator[tuple[str, str, int, bool, bool]],
         pending_time_size: Sequence[tuple[datetime, int]],
     ):
-        # #TODO: show current time
         table = self._construct_new_table(table_content, pending_time_size)
-        self.live_console.update(table, refresh=True)
+        self.live_console.update(
+            Group(table, self._centered_time()),
+            refresh=True,
+        )
 
     def save_history_html(
         self,
@@ -141,3 +143,7 @@ class RichTable:
         str_console = Console(file=output_buffer, record=True)
         str_console.print(table)
         return output_buffer.getvalue()  # for testing
+
+    @staticmethod
+    def _centered_time() -> Align:
+        return Align(format_local_time(datetime.now()), "center")
