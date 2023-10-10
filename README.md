@@ -33,6 +33,16 @@ Then setup the virtual environment and install the requirements with poetry:
 poetry install
 ```
 
+### Mac with Intel
+
+(mbedtls updated to 3.5.0, so the version number is different)
+
+```zsh
+cp /usr/local/opt/mbedtls/lib/libmbedcrypto.15.dylib /usr/local/opt/mbedtls/lib/libmbedcrypto.13.dylib
+```
+
+I had an error `dyld[49347]: Library not loaded: '@loader_path/../../../../Python.framework/Versions/3.11/Python'` on poetry installation; solved by `pip install poetry`. The brew version won't work.
+
 ### Not supported
 
 I don't know how to install these.

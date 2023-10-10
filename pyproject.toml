@@ -33,7 +33,6 @@ pytest-xdist = "^2.0.0"
 pytest-timeout = "^1.0.0"
 pytest-randomly = "^3.0.0"
 pytest-benchmark = "^3.0.0"
-pytest-black = "^0.3.0"
 
 [tool.poetry.group.dev.dependencies]
 icecream = "^2.1.3"
