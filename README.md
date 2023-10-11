@@ -24,7 +24,10 @@ brew install mbedtls # /opt/homebrew/Cellar/mbedtls/3.4.1/lib/libmbedcrypto.13.d
 After this, my mbedtls@3.4.1 gives only a `libmbedcrypto.14.dylib` but I renamed it manually:
 
 ```zsh
-cp /opt/homebrew/Cellar/mbedtls/3.4.1/lib/libmbedcrypto.13.dylib /opt/homebrew/Cellar/mbedtls/3.4.1/lib/libmbedcrypto.14.dylib
+# for mbedtls@3.4.1
+cp /opt/homebrew/Cellar/mbedtls/3.4.1/lib/libmbedcrypto.14.dylib /opt/homebrew/Cellar/mbedtls/3.4.1/lib/libmbedcrypto.13.dylib
+# for mbedtls@3.5.0
+cp /opt/homebrew/Cellar/mbedtls/3.5.0/lib/libmbedcrypto.15.dylib /opt/homebrew/Cellar/mbedtls/3.5.0/lib/libmbedcrypto.13.dylib
 ```
 
 Then setup the virtual environment and install the requirements with poetry:
