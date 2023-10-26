@@ -22,7 +22,7 @@ summarizer: "NONE" # "NONE"(no summarization) or "GPT3"
 
 ### General ###
 linux_microphone: "list" # ignore if not Linux users; "list" shows all microphones.
-microphone_energy_threshold: 1000 # default: 1000; minimum audio energy to record
+microphone_energy_threshold: 500 # default: 500; minimum audio energy to record
 
 ### PATH type ###
 # "" means nothing will be created.

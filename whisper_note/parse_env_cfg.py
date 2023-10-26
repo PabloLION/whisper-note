@@ -32,7 +32,7 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
             cfg.get("target_lang", "Chinese_Simplified")
         )
         parsed_cfg["linux_microphone"] = cfg.get("linux_microphone", None)
-        parsed_cfg["energy_threshold"] = cfg.get("energy_threshold", 1000)
+        parsed_cfg["energy_threshold"] = cfg.get("energy_threshold", 500)
         parsed_cfg["phrase_max_second"] = cfg.get("phrase_max_second", 3)
         parsed_cfg["store_merged_wav"] = cfg.get("store_merged_wav", False)
         parsed_cfg["merged_transcription"] = cfg.get("merged_transcription", "")

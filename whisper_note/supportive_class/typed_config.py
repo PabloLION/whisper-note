@@ -20,7 +20,7 @@ class FrozenConfig(NamedTuple):
     source_lang: Language | None  # both translator and whisper support None
     target_lang: Language
     linux_microphone: str | None
-    energy_threshold: int
+    energy_threshold: int # TODO: name it better
     phrase_max_second: int
     summarizer: str
     store_merged_wav: Path | None
@@ -62,7 +62,7 @@ EXAMPLE_CONFIG = FrozenConfig(
     source_lang=Language.EN,
     target_lang=Language.CN,
     linux_microphone=None,
-    energy_threshold=1000,
+    energy_threshold=805000,
     phrase_max_second=3,
     summarizer="NONE",
     store_merged_wav=None,
