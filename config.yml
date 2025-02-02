@@ -1,11 +1,15 @@
 ### Transcription ###
-model: "small" # default: "small.en"  model name
+model: "turbo" # default: "small.en"  model name
+# valid model values:
+# - English models:      "tiny.en", "base.en", "small.en", "medium.en"
+# - Multilingual models: "tiny",    "base"   , "small",    "medium", "large", "large-v2","large-v3", "turbo"="large-v3-turbo",
+# - VRAM / speed:        1G,10X;    1G,7X;     2,4X   ;    5G,2X;    10G,1X;                         6G,8X
 phrase_max_second: 5 # default: 5; max seconds before forcefully break a phrase
 
 ### Translation ###
 # If translator is "NONE", source_lang and target_lang will be ignored.
 # translator planned to support: "GOOGLE", "MICROSOFT", "AMAZON", "YANDEX", "PAPAGO", "KAKAO"
-translator: "DEEPL" # "NONE"(no translation) or "DEEPL".
+translator: "NONE" # "NONE"(no translation) or "DEEPL".
 # See language codes in translator.py. Translate English to Chinese by default.
 source_lang: "English" # default: "English"
 target_lang: "Chinese_Simplified" # default: "Chinese_Simplified"

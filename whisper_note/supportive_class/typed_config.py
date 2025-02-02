@@ -20,7 +20,7 @@ class FrozenConfig(NamedTuple):
     source_lang: Language | None  # both translator and whisper support None
     target_lang: Language
     linux_microphone: str | None
-    energy_threshold: int # TODO: name it better
+    energy_threshold: int  # TODO: name it better
     phrase_max_second: int
     summarizer: str
     store_merged_wav: Path | None
@@ -28,9 +28,9 @@ class FrozenConfig(NamedTuple):
     live_history_html: Path | None
 
     def mutated_copy(self: "FrozenConfig", **kwargs: ConfigValue) -> "FrozenConfig":
-        nf = FrozenConfig(**{**self._asdict(), **kwargs})  # type: ignore
-        nf.__type_check__()  # do the type check due to type ignore above
-        return nf
+        copy = FrozenConfig(**{**self._asdict(), **kwargs})  # type: ignore
+        copy.__type_check__()  # do the type check due to type ignore above
+        return copy
 
     def __type_check__(self) -> None:
         expected_type = {
