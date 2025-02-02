@@ -36,10 +36,13 @@ class Transcriber:
     def _load_whisper_model(self) -> whisper.Whisper:
         """Load / Download whisper model."""
         model = self.config.model
-        if self.config.source_lang == Language.EN and not model.endswith(".en"):
-            model += ".en"
+        # if self.config.source_lang == Language.EN and not model.endswith(".en"):
+        #     model += ".en"
         LOG.info(f"Loading whisper model [{model}]")
-        whisper_model = whisper.load_model(model)
+        try:
+            whisper_model = whisper.load_model(model)
+        except RuntimeError as e:
+            LOG.error(f"Failed to load whisper model [{model}]: {e}")
         LOG.info(f"Whisper model [{model}] loaded.")
         return whisper_model
 
