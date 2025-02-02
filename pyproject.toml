@@ -12,15 +12,15 @@ note = "whisper_note.__main__:run"
 tst = "tests.__main__:run_all_tests"
 
 [tool.poetry.dependencies]
-python = ">3.9,<3.12"                                              # 3.12 blocks numpy for `distutils`
+python = ">3.9,<3.12"                                                               # 3.12 blocks numpy for `distutils`
 SpeechRecognition = "^3.10.0"
-openai-whisper = { git = "https://github.com/openai/whisper.git" }
+openai-whisper = { git = "https://github.com/openai/whisper.git", branch = "main" } # might be unstable
 pyaudio = "^0.2.13"
 result = "^0.13.1"
 deepl = "^1.15.0"
 pyyaml = "^6.0.1"
 python-dotenv = "^1.0.0"
-numba = "^0.58.0"                                                  # override openai-whisper's default none numba version
+numba = "^0.58.0"                                                                   # override openai-whisper's default none numba version
 rich = "^13.6.0"
 
 [tool.poetry.group.test.dependencies]
