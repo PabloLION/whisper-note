@@ -87,4 +87,3 @@ def parse_env_and_config(env_config_path: str) -> FrozenConfig:
 
 
 CONFIG = parse_env_and_config(DEFAULT_CONFIG_FOLDER)
-print(CONFIG.model)
