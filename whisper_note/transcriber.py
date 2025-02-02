@@ -30,8 +30,14 @@ class Transcriber:
         self.data_q = Queue()  # thread-safe queue, record audio in background
         self.recorder = ChunkedRecorder(self.data_q, config)
         self.transcription = Transcriptions(
-            live_print=True, live_translator=get_translator(self.config)
-        )  # output transcription
+            live_print=True,
+            live_translator=(
+                None
+                if self.config.translator == "NONE"
+                else get_translator(self.config)
+            ),
+        )
+        # output transcription
 
     def _load_whisper_model(self) -> whisper.Whisper:
         """Load / Download whisper model."""
