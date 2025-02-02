@@ -1,3 +1,4 @@
+from functools import lru_cache
 import dotenv
 import os
 import yaml
@@ -13,7 +14,8 @@ from whisper_note.supportive_class.file_and_io import parse_path_config
 DEFAULT_CONFIG_FOLDER = os.path.abspath(os.path.join(__file__, "..", ".."))
 
 
-def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> FrozenConfig:
+@lru_cache(maxsize=1)
+def parse_env_and_config(env_config_path: str) -> FrozenConfig:
     cfg_path = os.path.join(env_config_path, "config.yml")
     env_path = os.path.join(env_config_path, ".env")
     assert os.path.exists(cfg_path), f"config.yml not found in {env_config_path=}"
@@ -84,4 +86,5 @@ def parse_env_and_config(env_config_path: str = DEFAULT_CONFIG_FOLDER) -> Frozen
     return CONFIG
 
 
-CONFIG = parse_env_and_config()
+CONFIG = parse_env_and_config(DEFAULT_CONFIG_FOLDER)
+print(CONFIG.model)
