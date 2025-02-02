@@ -1,6 +1,7 @@
 import os
 from collections import deque
 from datetime import datetime
+from pathlib import Path
 from sys import platform
 from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
 
@@ -41,10 +42,10 @@ class ChunkedRecorder:
         self.pending_time_size.popleft()
         return (temp_wav, time, size)
 
-    def write_merged_wav(self) -> str | None:
+    def write_merged_wav(self) -> Path:
         """merge all wav files in self.all_wav to a single wav file"""
         if not self.config.store_merged_wav:  # double checking is good
-            return
+            raise ValueError("store_merged_wav is not set.")
         with open(self.config.store_merged_wav, "ab") as merged_wav:
             merge_wav_files(self.all_wav, merged_wav)
         return self.config.store_merged_wav
